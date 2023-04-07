@@ -79,7 +79,7 @@ defaultMain :: Options -> IO ()
 defaultMain Options{..} = runIOorExplode $ do
     setVerbosity INFO
     shelly $ mkdir_p outputDir
-    doc <- (crossref <$> readYaml _input) >>=
+    doc <- fmap addAuthors $ (crossref <$> readYaml _input) >>=
         citeproc (if _disable_cache then Nothing else Just _bib_cache) (Just cslNature) >>=
         absPath
     latexTemplate <- case _latex_template of

@@ -3,9 +3,11 @@ module Text.Pandoc.Paper.Filters
     , crossref
     , absPath
     , filterLaTeX
+    , addAuthors
     ) where
 
 import Text.Pandoc.Paper.Filters.Citations (citeproc)
 import Text.Pandoc.Paper.Filters.CrossRef (crossref)
 import Text.Pandoc.Paper.Filters.Path (absPath)
 import Text.Pandoc.Paper.Filters.LaTeX (filterLaTeX)
+import Text.Pandoc.Paper.Filters.Authors (addAuthors)

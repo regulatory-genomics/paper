@@ -44,7 +44,6 @@
 \RequirePackage[scaled]{helvet}
 \RequirePackage[T1]{fontenc}
 \RequirePackage{lettrine} % For dropped capitals
-%\RequirePackage[misc]{ifsym} % For the \Letter symbol
 \RequirePackage{bbding} % For the \Envelope symbol
 \RequirePackage[twoside,%
 				letterpaper,includeheadfoot,%
@@ -401,9 +400,10 @@
 %% Pandoc reference style -- end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\usepackage{ccaption}
 \usepackage{svg}
 \usepackage{blindtext}
+\usepackage{array, booktabs}
+\usepackage{fontawesome5}
 
 % Caption style
 \usepackage{caption}
@@ -436,11 +436,24 @@ $if(short-title)$
 \shorttitle{$short-title$}
 $endif$
 
+$if(author)$
+$for(author)$
+\author[$for(author.marks)$$author.marks$$sep$,$endfor$,$if(author.corresponding)$\faEnvelope$endif$]{$author.name$}
+$endfor$
+
+$if(affiliation)$
+$for(affiliation)$
+\affil[$affiliation.mark$]{$affiliation.name$}
+$endfor$
+$endif$
+
+$endif$
+
+
 % Use letters for affiliations, numbers to show equal authorship (if applicable) and to indicate the corresponding author
 %\author[1,\Letter]{Ricardo Henriques}
-\author[1]{Kai Zhang}
-
-\affil[1]{University of California San Diego}
+%\author[1,\faEnvelope]{Kai Zhang}
+%\affil[2]{University of California San Diego}
 
 \maketitle
 
@@ -454,9 +467,11 @@ $abstract$
 %the command above serves to have a word count for the abstract
 $endif$
 
+$if(keywords)$
 \begin{keywords}
-bla | bla | bla | bla
+$for(keywords)$$keywords$$sep$ | $endfor$
 \end{keywords}
+$endif$
 
 \begin{corrauthor}
 biren\at health.ucsd.edu

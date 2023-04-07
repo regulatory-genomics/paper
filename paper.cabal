@@ -30,6 +30,7 @@ library
       Text.Pandoc.Paper
       Text.Pandoc.Paper.Readers
       Text.Pandoc.Paper.Filters
+      Text.Pandoc.Paper.Filters.Authors
       Text.Pandoc.Paper.Filters.LaTeX
       Text.Pandoc.Paper.Filters.Path
       Text.Pandoc.Paper.Filters.CrossRef
@@ -43,6 +44,7 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , aeson
     , bytestring >= 0.11.0
     , bytestring-encoding
     , bibtex
