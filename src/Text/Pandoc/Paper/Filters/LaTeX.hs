@@ -12,13 +12,13 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Text.Pandoc
 import Text.Pandoc.Walk
-import           Text.Pandoc
+import Text.Pandoc.Definition
 import Text.Printf
 import Text.Pandoc.Builder
 import Data.Maybe
 
 filterLaTeX :: Pandoc -> PandocIO Pandoc
-filterLaTeX = walkM placeFigure
+filterLaTeX = walkM (placeFigure . tableToLaTeX)
 
 -- | This function traverses the AST and replaces all images
 placeFigure :: Block -> PandocIO Block
@@ -68,6 +68,42 @@ placeFigure (Figure (ident, _, _) (Caption _ caption) fig) = do
 placeFigure x = return x
 -}
 -}
+
+tableToLaTeX :: Block -> Block
+tableToLaTeX t@(Table (ident, _, _) (Caption _ caption) specs (TableHead _ thead) tbodies (TableFoot _ tfoot)) =
+    let txt = T.unlines
+            [ "\\begin{table*}"
+            , "\\centering"
+            , "\\caption{" <> caption' <> "}"
+            , "\\begin{tabular}{|" <> T.intercalate "|" (replicate ncol "l") <> "|}"
+            , "\\hline"
+            , header
+            , "\\hline"
+            , body
+            , "\\hline"
+            , footer
+            , "\\hline"
+            , "\\end{tabular}"
+            , "\\end{table*}"
+            ]
+    in RawBlock (Format "latex") txt
+  where
+    ncol = let Row _ cells = head thead in length cells
+    header = T.unlines $ map rowToLaTeX thead
+    body = T.unlines $ concatMap (\(TableBody _ _ _ rows) -> map rowToLaTeX rows) tbodies
+    footer = T.unlines $ map rowToLaTeX tfoot
+    caption' = case runPure (writeLaTeX def $ Pandoc (Meta M.empty) caption) of
+        Left err -> error $ show err
+        Right x -> x
+tableToLaTeX x = x
+
+rowToLaTeX :: Row -> T.Text
+rowToLaTeX (Row _ cells) = T.intercalate " & " (map cellToLaTeX cells) <> " \\\\"
+
+cellToLaTeX :: Cell -> T.Text
+cellToLaTeX (Cell _ _ _ _ blks) = case runPure (writeLaTeX def $ Pandoc (Meta M.empty) blks) of
+    Left err -> error $ show err
+    Right x -> x
 
 {-
 tableToLaTeX :: PandocMonad m

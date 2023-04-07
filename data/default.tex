@@ -13,15 +13,12 @@
 \DeclareOption{rmabstract}{\bfabstractfalse}
 \newif\ifbibskip        \bibskipfalse
 \DeclareOption{bibskip}{\bibskiptrue}
-\newif\ifwatermark        \watermarkfalse
-\DeclareOption{watermark}{\watermarktrue}
 
 \DeclareOption{draft}{\PassOptionsToClass{draft}{article}}
 \DeclareOption{times}{\@timestrue}
 \DeclareOption{twoside}{\@twosidetrue}
 \DeclareOption{twocolumn}{\@tmptwocolumntrue}
 \DeclareOption{onecolumn}{\@tmptwocolumnfalse}
-%\DeclareOption{watermark}{\@displaywatermark}
 
 \ExecuteOptions{times,twoside,twocolumn}
 \ProcessOptions
@@ -110,7 +107,6 @@
 \long\def\@makefntext#1{\parindent .8em\indent$$^{\@thefnmark}$$#1}
 \def\footnoterule{}
 
-
 \newdimen\@maxsep
 \newdimen\@dblmaxsep
 %% Definitions for floats
@@ -130,7 +126,7 @@
 \def\bottomfraction{.1}
 \setcounter{totalnumber}{4}
 \def\textfraction{.1}
-\setlength{\belowcaptionskip}{-10pt} % reduces spacing between figure legend and text
+%\setlength{\belowcaptionskip}{-10pt} % reduces spacing between figure legend and text
 
 \renewcommand{\topfraction}{0.99}
 \renewcommand{\floatpagefraction}{0.5}
@@ -169,22 +165,6 @@
 \RequirePackage[explicit]{titlesec}
 \renewcommand{\thesubsection}{\Alph{subsection}}
 
-%\usepackage[explicit]{titlesec}
-% \titleformat{<command>}[<shape>]{<format>}{<label>}{<sep>}{<before>}[<after>]
-% \titleformat{\section}[hang]{\normalfont\Large\bfseries}%
-%     {\thechapter.}{4pt}%
-%     {#1 \arabic{section}.}
-% \makeatletter
-% \renewcommand\thesection{}
-% \renewcommand\thesubsection{\@arabic\c@section.\@arabic\c@subsection}
-% \makeatother
-% \titleformat{\section}[hang]
-%   {\large\sffamily\bfseries}
-%   {\thesection.}
-%   {0.5em}
-%   {#1.}
-%   []
-
 \titleformat{\section}
   {\large\sffamily\bfseries}
   {}
@@ -220,13 +200,20 @@
 \titlespacing*{\paragraph}{0pc}{1.5ex \@plus2pt \@minus1pt}{12pt}
 
 
-% %% Watermark 
-%\usepackage[printwatermark]{xwatermark}
-%\AtBeginDocument{%
-%  \ifwatermark%
-%  \newwatermark[allpages,color=gray!20,angle=45,scale=3,xpos=0,ypos=0]{DRAFT}
-%  \fi
-%}
+%% Watermark 
+$if(watermark)$
+\usepackage{tikz}
+\usepackage{eso-pic}
+\pgfdeclarelayer{watermark}
+\pgfsetlayers{main,watermark}
+\AddToShipoutPictureFG{
+  \begin{tikzpicture}[overlay,remember picture]
+    \begin{pgfonlayer}{watermark}
+      \node[opacity=0.2, scale=12, rotate=45, text=gray] at (current page.center) {$watermark$};
+    \end{pgfonlayer}
+  \end{tikzpicture}
+}
+$endif$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Henriques lab parts adapted from PNAS - END %%
@@ -438,7 +425,7 @@ $endif$
 
 $if(author)$
 $for(author)$
-\author[$for(author.marks)$$author.marks$$sep$,$endfor$,$if(author.corresponding)$\faEnvelope$endif$]{$author.name$}
+\author[$for(author.marks)$$author.marks$$sep$,$endfor$$if(author.corresponding)$,\faEnvelope$endif$]{$author.name$}
 $endfor$
 
 $if(affiliation)$
@@ -448,12 +435,6 @@ $endfor$
 $endif$
 
 $endif$
-
-
-% Use letters for affiliations, numbers to show equal authorship (if applicable) and to indicate the corresponding author
-%\author[1,\Letter]{Ricardo Henriques}
-%\author[1,\faEnvelope]{Kai Zhang}
-%\affil[2]{University of California San Diego}
 
 \maketitle
 
