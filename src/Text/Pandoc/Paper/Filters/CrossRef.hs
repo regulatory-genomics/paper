@@ -17,10 +17,18 @@ import Text.Pandoc.Builder
 
 -- | This function traverses the AST and add cross references for figures and tables
 crossref :: Pandoc -> Pandoc
-crossref p@(Pandoc meta _) =
-    runCrossRef meta' Nothing crossRefAction p
+crossref p@(Pandoc meta blks) = case nSupp of
+    0 -> Pandoc meta' blk'
+    _ -> let revBlk = reverse blk'
+             supp = reverse $ take nSupp revBlk
+             rest = reverse $ drop nSupp revBlk
+          in Pandoc (setMeta "supplement" (MetaBlocks supp) meta') rest
   where
-    meta' = figureTitle ("Figure" :: String) <>
+    Pandoc meta' blk' = runCrossRef template Nothing crossRefAction doc
+    (nSupp, doc) = case lookupMeta "supplement" meta of
+        Just (MetaBlocks supplement) -> (length supplement, Pandoc meta $ blks <> supplement)
+        Nothing -> (0, Pandoc meta blks)
+    template = figureTitle ("Figure" :: String) <>
         titleDelim ("|" :: String) <>
         tp <> meta
     tp = figureTemplate $ strong

@@ -20,6 +20,7 @@ import Control.Monad.IO.Class
 import qualified Data.Map as M
 import Text.Pandoc.Walk
 import System.FilePath (takeDirectory)
+import Text.Pandoc.Builder
 
 -- | Read a document from a Yaml file.
 readYaml :: FilePath -> PandocIO Pandoc
@@ -31,7 +32,17 @@ readYaml file = do
             readDoc $ dir <> "/" <> T.unpack (stringify filename)
         Nothing -> error "No 'contents' key found in YAML file."
         _ -> error "The 'contents' key must be a list of strings."
-    return $ Pandoc (meta <> metadata) doc
+    Pandoc _ supplement <- case lookupMeta "supplement" metadata of
+        Just (MetaList contents) -> fmap mconcat $ forM contents $ \filename ->
+            readDoc $ dir <> "/" <> T.unpack (stringify filename)
+        Nothing -> return mempty
+
+    let meta' = setMeta "supplement" (MetaBlocks supplement) $
+            setMeta "chapters" (MetaBool True) $
+            setMeta "chaptersDepth" (MetaInlines [Str "1"]) $
+            setMeta "chapDelim" (MetaInlines []) $
+            meta <> metadata
+    return $ Pandoc meta' doc
 
 readDoc :: FilePath -> PandocIO Pandoc
 readDoc txtMain = do

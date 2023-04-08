@@ -391,6 +391,7 @@ $endif$
 \usepackage{blindtext}
 \usepackage{array, booktabs}
 \usepackage{fontawesome5}
+\usepackage{float}
 
 % Caption style
 \usepackage{caption}
@@ -482,8 +483,11 @@ $endif$
 \onecolumn
 \newpage
 
+\floatplacement{figure}{h}
 \captionsetup*{format=largeformat}
-\section{Something about something} \label{note:Note1} 
-\Blindtext
+
+$if(supplement)$
+$supplement$
+$endif$
 
 \end{document}
