@@ -17,6 +17,9 @@ contextTemplate = $(embedFile "data/default.context")
 latexTemplateFile :: B.ByteString
 latexTemplateFile = $(embedFile "data/default.tex")
 
+docxTemplateFile :: B.ByteString
+docxTemplateFile = $(embedFile "data/default.dotx")
+
 htmlTemplateFile :: B.ByteString
 htmlTemplateFile = $(embedFile "data/default.html")
 

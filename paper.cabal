@@ -17,6 +17,7 @@ extra-source-files:
 data-files:
     data/*.context
     data/*.tex
+    data/*.dotx
     data/*.html
     data/*.csl
 
@@ -28,6 +29,7 @@ library
   ghc-options: -O2 -Wall -Wcompat -Wincomplete-record-updates
   exposed-modules:
       Text.Pandoc.Paper
+      Text.Pandoc.Paper.Writers
       Text.Pandoc.Paper.Readers
       Text.Pandoc.Paper.Filters
       Text.Pandoc.Paper.Filters.Authors

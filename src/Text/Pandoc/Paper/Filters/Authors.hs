@@ -1,19 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 module Text.Pandoc.Paper.Filters.Authors (addAuthors) where
 
-import Data.List (nub, sort, sortBy)
+import Data.List (nub, sort, sortBy, intersperse)
 import Data.Ord (comparing)
 import qualified Data.Text as T
 import Data.Aeson
 import Data.Maybe
 import Text.Pandoc
 import Text.Pandoc.Shared (stringify)
-import Text.Pandoc.Builder (Inlines, text, ToMetaValue(..), setMeta)
+import Text.Pandoc.Builder
 import qualified Data.Map as M
-import Debug.Trace
-import GHC.Generics (Generic)
 
 data Author = Author {
     name :: T.Text,
@@ -22,7 +19,7 @@ data Author = Author {
     equal_contribution :: Bool,
     corresponding :: Bool,
     marks :: [T.Text]
-} deriving (Show, Generic)
+} deriving (Show)
 
 instance ToMetaValue Author where
     toMetaValue author = MetaMap $ M.fromList [
@@ -34,12 +31,10 @@ instance ToMetaValue Author where
         ("marks", MetaList $ map MetaString $ marks author)
         ]
 
-instance ToJSON Author
-
 data Affiliation = Affiliation {
     aff_mark :: T.Text,
     aff_name :: T.Text
-} deriving (Show, Generic)
+} deriving (Show)
 
 instance ToMetaValue Affiliation where
     toMetaValue aff = MetaMap $ M.fromList [
@@ -47,15 +42,32 @@ instance ToMetaValue Affiliation where
         ("name", MetaString $ aff_name aff)
         ]
 
-instance ToJSON Affiliation
-
-addAuthors :: Pandoc -> Pandoc
-addAuthors (Pandoc meta blocks) = Pandoc meta' blocks
+-- | Add author metadata to Pandoc.
+addAuthors :: Format -> Pandoc -> Pandoc
+addAuthors format (Pandoc meta blocks) = Pandoc meta' blocks
   where
-    meta' = setMeta "author" authors $
-        setMeta "affiliation" affs $
-        meta
+    meta' = case format of
+        "latex" -> setMeta "author" authors $
+            setMeta "affiliation" affs $
+            meta
+        _ -> setMeta "author" authorBlock meta
     (authors, affs) = addMarks $ readAuthors meta
+    authorBlock =
+        let authors' = para $ combineAuthors $ map formatAuthor authors
+            affs' = para $ mconcat $ intersperse linebreak $ map formatAffliation affs
+        in [authors', affs']
+
+    formatAuthor :: Author -> Inlines
+    formatAuthor author = 
+        let m = marks author <> (if corresponding author then ["✉"] else [])
+        in text (name author) <> superscript (text $ T.intercalate "," m)
+    formatAffliation :: Affiliation -> Inlines
+    formatAffliation aff = superscript (text $ aff_mark aff) <> text (aff_name aff)
+    combineAuthors :: [Inlines] -> Inlines
+    combineAuthors authors = mconcat $ intersperse spacer authors
+      where
+        spacer | length authors == 2 = text " and "
+               | otherwise = text ", "
 
 addMarks :: [Author] -> ([Author], [Affiliation])
 addMarks authors = (map addMark authors, map f $ sortBy (comparing snd) $ M.toList aff)
