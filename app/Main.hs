@@ -22,6 +22,7 @@ import           Data.Version                      (showVersion)
 import           Options.Applicative
 import           Paths_paper(version)
 import           Text.Printf
+import Text.Pandoc.Shared (stringify)
 
 import Text.Pandoc.Paper.Writers (writeDocx', writeHtml)
 import Text.Pandoc.Paper.Readers (readYaml)
@@ -95,7 +96,7 @@ defaultMain Options{..} = runIOorExplode $ do
         citeproc (if _disable_cache then Nothing else Just _bib_cache) (Just cslNature) >>=
         absPath
     let filepath = case lookupMeta "short-title" meta of
-            Just (MetaString title) -> outputDir <> "/" <> T.unpack title
+            Just title -> outputDir <> "/" <> T.unpack (stringify title)
             _ -> outputDir <> "/" <> takeBaseName _input
 
     latexTemplate <- case _latex_template of
