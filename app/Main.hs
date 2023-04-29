@@ -8,6 +8,7 @@ module Main where
 import Control.Monad (when)
 import Text.Pandoc
 import Text.DocTemplates (toContext)
+import Text.Pandoc.SelfContained (makeSelfContained)
 import qualified Data.Text.IO as T
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
@@ -22,7 +23,7 @@ import           Options.Applicative
 import           Paths_paper(version)
 import           Text.Printf
 
-import Text.Pandoc.Paper.Writers (writeDocx')
+import Text.Pandoc.Paper.Writers (writeDocx', writeHtml)
 import Text.Pandoc.Paper.Readers (readYaml)
 import Text.Pandoc.Paper.Filters
 import Text.Pandoc.Paper.Templates
@@ -39,6 +40,7 @@ data Options = Options
     , _output_docx :: Bool
     , _output_html :: Bool
     , _disable_cache :: Bool
+    , _self_contained :: Bool
     } deriving (Show, Read)
 
 -- The parser for the command line options
@@ -80,14 +82,22 @@ optsParser = Options
     <*> switch
         ( long "disable-cache"
         <> help "disable cache" )
+    <*> switch
+        ( long "self-contained"
+        <> help "self contained html" )
 
 defaultMain :: Options -> IO ()
 defaultMain Options{..} = runIOorExplode $ do
     setVerbosity INFO
     shelly $ mkdir_p outputDir
-    doc <- (crossref <$> readYaml _input) >>=
+
+    doc@(Pandoc meta _) <- (crossref <$> readYaml _input) >>=
         citeproc (if _disable_cache then Nothing else Just _bib_cache) (Just cslNature) >>=
         absPath
+    let filepath = case lookupMeta "short-title" meta of
+            Just (MetaString title) -> outputDir <> "/" <> T.unpack title
+            _ -> outputDir <> "/" <> takeBaseName _input
+
     latexTemplate <- case _latex_template of
         Just fl -> loadTemplate fl
         Nothing -> defaultLaTeXTemplate
@@ -100,16 +110,15 @@ defaultMain Options{..} = runIOorExplode $ do
         htmlTemplate <- case _html_template of
             Just fl -> loadTemplate fl
             Nothing -> defaultHtmlTemplate
-        let opts = def
-                { writerTemplate=Just htmlTemplate
-                , writerVariables = toContext $ M.fromList [("self-contained" :: T.Text, "true" :: T.Text)] }
-        writeHtml5String opts (addAuthors "html" doc) >>=
-            liftIO . T.writeFile (filepath <> ".html")
+        let opts = def { writerTemplate=Just htmlTemplate }
+        html <- if _self_contained
+            then writeHtml opts (addAuthors "html" doc) >>= makeSelfContained
+            else writeHtml opts (addAuthors "html" doc)
+        liftIO $ T.writeFile (filepath <> ".html") html
     when _output_docx $
         writeDocx' def{ writerReferenceDoc=_docx_template} (addAuthors "docx" doc) >>=
             liftIO . BL.writeFile (filepath <> ".docx")
   where
-    filepath = outputDir <> "/" <> takeBaseName _input
     outputDir = case _out_dir of
         Nothing -> takeDirectory _input
         Just dir -> dir

@@ -45,8 +45,8 @@ readYaml file = do
     return $ Pandoc meta' doc
 
 readDoc :: FilePath -> PandocIO Pandoc
-readDoc txtMain = do
-    liftIO (T.readFile txtMain) >>= readMarkdown def{ readerExtensions = extensions }
+readDoc txtMain = liftIO (T.readFile txtMain) >>=
+    readMarkdown def{ readerExtensions = extensions }
   where
     extensions = extensionsFromList
         [ Ext_footnotes
