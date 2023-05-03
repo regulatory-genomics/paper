@@ -15,11 +15,13 @@ extra-source-files:
     README.md
     ChangeLog.md
 data-files:
-    data/*.context
     data/*.tex
     data/*.dotx
     data/*.html
     data/*.csl
+    data/template/*.md
+    data/template/*.yaml
+    data/template/*.pdf
 
 source-repository head
   type: git

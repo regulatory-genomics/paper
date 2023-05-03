@@ -5,8 +5,6 @@ module Text.Pandoc.Paper.Writers
     , writeHtml
     ) where
 
-import Control.Monad
-import qualified Data.Vector as V
 import Text.Pandoc
 import Data.Default
 import qualified Data.ByteString.Lazy as BL

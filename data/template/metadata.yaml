@@ -1,0 +1,35 @@
+watermark: DRAFT
+title: "Paper: a Pandoc-based app for scientific writing using Markdown"
+short-title: Paper
+link-citations: true
+keywords:
+  - Pandoc
+  - Markdown
+  - Paper
+
+author:
+  - github: kaizhang
+    name: Kai Zhang
+    email: kaz007@ucsd.edu
+    affiliations:
+      - Department of Cellular and Molecular Medicine, University of California San Diego School of Medicine, La Jolla, CA, USA
+    corresponding: true
+
+abstract: |
+  The landscape of scientific writing has been rapidly evolving, with researchers seeking more efficient and user-friendly methods to create, collaborate on, and share their work.
+  The traditional word processing tools often hinder the writing process with complex formatting, limited version control, and poor integration with reference management software.
+  This paper introduces Paper, a pandoc-based application designed to streamline scientific writing using Markdown, a lightweight and easy-to-read markup language.
+  Paper incorporates the powerful document conversion capabilities of pandoc to facilitate seamless conversion between Markdown and a variety of output formats, including DOCX, HTML, and PDF.
+  The app supports collaborative writing, easy-to-manage version control, and effective reference management.
+  Additionally, Paper provides customizable templates for various academic disciplines and journal styles, simplifying the manuscript preparation process.
+  Our comparative study demonstrates that Paper not only enhances the writing experience for researchers but also reduces the time spent on document formatting and management, ultimately fostering more productive and efficient scientific communication.
+
+contents:
+  - introduction.md
+  - results.md
+  - discussion.md
+  - methods.md
+  - acknowledgements.md
+
+supplement:
+  - supplement.md

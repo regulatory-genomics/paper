@@ -5,19 +5,18 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Main where
 
-import Control.Monad (when)
+import Control.Monad (when, forM_)
 import Text.Pandoc
 import Text.DocTemplates (toContext)
 import Text.Pandoc.SelfContained (makeSelfContained)
 import qualified Data.Text.IO as T
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
+import qualified Data.ByteString.Char8 as B
 import qualified Data.Map as M
-import Shelly (shelly, bash_, cp, liftIO, mkdir_p)
-import System.FilePath.Posix (takeBaseName, takeDirectory, takeFileName)
-import System.IO.Temp (withTempFile)
-import System.IO (hClose)
-import Data.Default
+import Shelly (shelly, bash_, cp, liftIO, mkdir_p, test_d)
+import System.FilePath.Posix (takeBaseName, takeDirectory)
+import System.Directory (setCurrentDirectory, makeAbsolute)
 import           Data.Version                      (showVersion)
 import           Options.Applicative
 import           Paths_paper(version)
@@ -29,9 +28,17 @@ import Text.Pandoc.Paper.Readers (readYaml)
 import Text.Pandoc.Paper.Filters
 import Text.Pandoc.Paper.Templates
 import Text.Pandoc.Paper.CSL
+import Text.Pandoc.Paper.Internal (template)
 
-data Options = Options
-    { _input :: FilePath
+data Command = Init InitOpts | Build BuildOpts
+    deriving (Show, Read)
+
+data InitOpts = InitOpts
+    { _proj_dir :: FilePath
+    } deriving (Show, Read)
+
+data BuildOpts = BuildOpts
+    { _input_dir :: FilePath
     , _latex_template :: Maybe FilePath
     , _html_template :: Maybe FilePath
     , _docx_template :: Maybe FilePath
@@ -44,10 +51,19 @@ data Options = Options
     , _self_contained :: Bool
     } deriving (Show, Read)
 
--- The parser for the command line options
-optsParser:: Parser Options
-optsParser = Options
-    <$> strArgument (metavar "INPUT")
+optsParser :: Parser Command
+optsParser = hsubparser
+    ( command "init" (info (Init <$> initParser) (progDesc "Initialize a new project"))
+   <> command "build" (info (Build <$> buildParser) (progDesc "Build a project"))
+    )
+
+initParser:: Parser InitOpts
+initParser = InitOpts
+    <$> strArgument (metavar "PROJECT_DIR")
+ 
+buildParser:: Parser BuildOpts
+buildParser = BuildOpts
+    <$> strArgument (metavar "PROJECT_DIR")
     <*> (optional . strOption)
         ( long "latex-template"
        <> metavar "LATEX_TEMPLATE"
@@ -87,17 +103,27 @@ optsParser = Options
         ( long "self-contained"
         <> help "self contained html" )
 
-defaultMain :: Options -> IO ()
-defaultMain Options{..} = runIOorExplode $ do
-    setVerbosity INFO
-    shelly $ mkdir_p outputDir
+initProject :: InitOpts -> IO ()
+initProject InitOpts{..} = do
+    shelly $ do
+        exists <- test_d _proj_dir
+        when exists $ error "Project directory already exists."
+        mkdir_p _proj_dir
+    forM_ template $ \(file, content) -> B.writeFile (_proj_dir <> "/" <> file) content
 
-    doc@(Pandoc meta _) <- (crossref <$> readYaml _input) >>=
+compileDocument :: BuildOpts -> IO ()
+compileDocument BuildOpts{..} = runIOorExplode $ do
+    setVerbosity INFO
+    outDir <- liftIO $ makeAbsolute outputDir
+    shelly $ mkdir_p outDir
+    liftIO $ setCurrentDirectory _input_dir
+
+    doc@(Pandoc meta _) <- (crossref <$> readYaml "metadata.yaml") >>=
         citeproc (if _disable_cache then Nothing else Just _bib_cache) (Just cslNature) >>=
         absPath
     let filepath = case lookupMeta "short-title" meta of
-            Just title -> outputDir <> "/" <> T.unpack (stringify title)
-            _ -> outputDir <> "/" <> takeBaseName _input
+            Just title -> outDir <> "/" <> T.unpack (stringify title)
+            _ -> outDir <> "/paper"
 
     latexTemplate <- case _latex_template of
         Just fl -> loadTemplate fl
@@ -121,8 +147,12 @@ defaultMain Options{..} = runIOorExplode $ do
             liftIO . BL.writeFile (filepath <> ".docx")
   where
     outputDir = case _out_dir of
-        Nothing -> takeDirectory _input
+        Nothing -> takeDirectory _input_dir
         Just dir -> dir
+
+defaultMain :: Command -> IO ()
+defaultMain (Init opts) = initProject opts
+defaultMain (Build opts) = compileDocument opts
 
 main :: IO ()
 main = execParser opts >>= defaultMain
