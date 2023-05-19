@@ -86,6 +86,7 @@ executable paper
   ghc-options: -O2 -Wall -threaded
   build-depends:
       base >=4.7 && <5
+    , aeson-pretty
     , bytestring
     , citeproc
     , containers

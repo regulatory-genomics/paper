@@ -34,8 +34,6 @@ import Text.Pandoc.Writers.BibTeX (writeBibTeX)
 import Control.Monad.State.Lazy (State, modify, execState)
 import Text.Pandoc.Definition
 import Data.Either (rights)
-import Data.Maybe
-import Text.Pandoc.Readers.BibTeX (readBibTeX)
 import Text.Printf (printf)
 
 import Text.Pandoc.Paper.CSL

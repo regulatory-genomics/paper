@@ -22,6 +22,7 @@ import           Options.Applicative
 import           Paths_paper(version)
 import           Text.Printf
 import Text.Pandoc.Shared (stringify)
+import Data.Aeson.Encode.Pretty (encodePretty)
 
 import Text.Pandoc.Paper.Writers (writeDocx', writeHtml)
 import Text.Pandoc.Paper.Readers (readYaml)
@@ -44,11 +45,13 @@ data BuildOpts = BuildOpts
     , _docx_template :: Maybe FilePath
     , _bib_cache :: FilePath
     , _out_dir :: Maybe FilePath
+    , _output_raw :: Bool
     , _output_pdf :: Bool
     , _output_docx :: Bool
     , _output_html :: Bool
     , _disable_cache :: Bool
     , _self_contained :: Bool
+    , _no_embed_fig :: Bool
     } deriving (Show, Read)
 
 optsParser :: Parser Command
@@ -88,6 +91,9 @@ buildParser = BuildOpts
        <> metavar "OUTPUT_DIR"
        <> help "output directory" )
     <*> switch
+        ( long "output-raw"
+        <> help "output abstract syntax tree" )
+    <*> switch
         ( long "output-pdf"
         <> help "output pdf" )
     <*> switch
@@ -102,6 +108,9 @@ buildParser = BuildOpts
     <*> switch
         ( long "self-contained"
         <> help "self contained html" )
+    <*> switch
+        ( long "no-embed-fig"
+        <> help "do not embed figures in html" )
 
 initProject :: InitOpts -> IO ()
 initProject InitOpts{..} = do
@@ -120,10 +129,13 @@ compileDocument BuildOpts{..} = runIOorExplode $ do
 
     doc@(Pandoc meta _) <- (crossref <$> readYaml "metadata.yaml") >>=
         citeproc (if _disable_cache then Nothing else Just _bib_cache) (Just cslNature) >>=
-        absPath
+        absPath >>=
+        (if _no_embed_fig then return . placeImagesAtEnd else return)
     let filepath = case lookupMeta "short-title" meta of
             Just title -> outDir <> "/" <> T.unpack (stringify title)
             _ -> outDir <> "/paper"
+    
+    when _output_raw $ liftIO $ BL.writeFile (filepath <> ".raw") $ encodePretty doc
 
     latexTemplate <- case _latex_template of
         Just fl -> loadTemplate fl
@@ -131,8 +143,10 @@ compileDocument BuildOpts{..} = runIOorExplode $ do
     filterLaTeX (addAuthors "latex" doc) >>=
         writeLaTeX def{writerTemplate=Just latexTemplate} >>=
         liftIO . T.writeFile (filepath <> ".tex")
+
     when _output_pdf $ 
         shelly $ bash_ "tectonic" [T.pack $ filepath <> ".tex", "--chatter", "minimal"]
+
     when _output_html $ do
         htmlTemplate <- case _html_template of
             Just fl -> loadTemplate fl
@@ -142,6 +156,7 @@ compileDocument BuildOpts{..} = runIOorExplode $ do
             then writeHtml opts (addAuthors "html" doc) >>= makeSelfContained
             else writeHtml opts (addAuthors "html" doc)
         liftIO $ T.writeFile (filepath <> ".html") html
+
     when _output_docx $
         writeDocx' def{ writerReferenceDoc=_docx_template} (addAuthors "docx" doc) >>=
             liftIO . BL.writeFile (filepath <> ".docx")
