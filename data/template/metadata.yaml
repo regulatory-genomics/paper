@@ -1,7 +1,5 @@
-watermark: DRAFT
 title: "Paper: a Pandoc-based app for scientific writing using Markdown"
 short-title: Paper
-link-citations: true
 keywords:
   - Pandoc
   - Markdown
@@ -33,3 +31,10 @@ contents:
 
 supplement:
   - supplement.md
+
+
+# Formatting options
+watermark: DRAFT
+twocolumn: false
+link-citations: true
+linenumbers: false

@@ -2,15 +2,10 @@
 \NeedsTeXFormat{LaTeX2e}
 
 \makeatletter
-%% define new needed boolean variables
-\newif\if@tmptwocolumn  \@tmptwocolumnfalse
 
 %% Options
 \newif\ifbfabstract     \bfabstracttrue
 \DeclareOption{rmabstract}{\bfabstractfalse}
-\DeclareOption{twocolumn}{\@tmptwocolumntrue}
-\DeclareOption{onecolumn}{\@tmptwocolumnfalse}
-\ExecuteOptions{twocolumn}
 \ProcessOptions
 \makeatother
 
@@ -219,11 +214,13 @@ $endif$
 \def\maketitle{\par
   \begingroup
   \def\thefootnote{} % the \thanks{} mark type is empty
-\if@tmptwocolumn
+
+$if(twocolumn)$
   \twocolumn[\@maketitle]
-\else
+$else$
   \@maketitle
-\fi
+$endif$
+
   \thispagestyle{plain}\@thanks
   \endgroup
   \setcounter{footnote}{0}\let\maketitle\relax\let\@maketitle\relax
@@ -278,7 +275,11 @@ $endif$
 \newtheorem{definition}{Definition}
 \newtheorem{corollary}{Corollary}
 
-\twocolumn \sloppy \flushbottom
+$if(twocolumn)$
+\twocolumn
+\sloppy
+\flushbottom
+$endif$
 
 %% Default rules for including pictures
 \usepackage{graphicx}
@@ -392,6 +393,11 @@ $endif$
 
 % Please give the surname of the lead author for the running footer
 \leadauthor{Zhang} 
+
+$if(linenumbers)$
+\usepackage{lineno}
+\linenumbers
+$endif$
 
 \begin{document}
 
