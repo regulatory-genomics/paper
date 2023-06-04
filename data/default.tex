@@ -215,10 +215,10 @@ $endif$
   \begingroup
   \def\thefootnote{} % the \thanks{} mark type is empty
 
-$if(twocolumn)$
-  \twocolumn[\@maketitle]
-$else$
+$if(draft)$
   \@maketitle
+$else$
+  \twocolumn[\@maketitle]
 $endif$
 
   \thispagestyle{plain}\@thanks
@@ -275,7 +275,8 @@ $endif$
 \newtheorem{definition}{Definition}
 \newtheorem{corollary}{Corollary}
 
-$if(twocolumn)$
+$if(draft)$
+$else$
 \twocolumn
 \sloppy
 \flushbottom
@@ -330,8 +331,6 @@ $endif$
 \fancyfoot[RO]{\aFooter}}
 
 \def\sectionmark#1{\relax}
-
-\parindent=0pt
 
 \makeatother
 
@@ -394,10 +393,12 @@ $endif$
 % Please give the surname of the lead author for the running footer
 \leadauthor{Zhang} 
 
-$if(linenumbers)$
-\usepackage{lineno}
-\linenumbers
+$if(draft)$
+\usepackage{setspace} \doublespacing
+\usepackage{lineno} \linenumbers
 $endif$
+
+\parindent=0pt
 
 \begin{document}
 
@@ -443,6 +444,8 @@ $endif$
 biren\at health.ucsd.edu
 \end{corrauthor}
 
+\parindent=1.5em
+
 $body$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -458,7 +461,17 @@ $endif$
 % References
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 $if(refs)$
+
+$if(draft)$
+\begin{singlespace}
+$endif$
+
 $refs$
+
+$if(draft)$
+\end{singlespace}
+$endif$
+
 $endif$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
