@@ -18,7 +18,13 @@ import Text.Pandoc.Builder
 import Data.Maybe
 
 filterLaTeX :: Pandoc -> PandocIO Pandoc
-filterLaTeX = walkM (placeFigure . tableToLaTeX)
+filterLaTeX doc@(Pandoc meta _) = do
+    let draft = case lookupMeta "draft" meta of
+            Just (MetaBool b) -> b
+            _ -> False
+    if draft
+        then walkM placeFigure doc
+        else walkM (placeFigure . tableToLaTeX) doc
 
 -- | This function traverses the AST and replaces all images
 placeFigure :: Block -> PandocIO Block

@@ -55,7 +55,10 @@ addAuthors format (Pandoc meta blocks) = Pandoc meta' blocks
     authorBlock =
         let authors' = para $ combineAuthors $ map formatAuthor authors
             affs' = para $ mconcat $ intersperse linebreak $ map formatAffliation affs
-        in [authors', affs']
+            corresponding_authors = map (\x -> name x <> " (" <> fromJust (email x) <> ")") $
+                filter corresponding authors
+            corres = para $ text $ "Correspondence: " <> T.intercalate ", " corresponding_authors
+        in [authors', affs', corres]
 
     formatAuthor :: Author -> Inlines
     formatAuthor author = 

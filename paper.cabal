@@ -1,7 +1,7 @@
 cabal-version: 1.12
 
 name:           paper
-version:        0.1.0
+version:        0.2.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/paper#readme>
 homepage:       https://github.com/kaizhang/paper#readme
 bug-reports:    https://github.com/kaizhang/paper/issues
