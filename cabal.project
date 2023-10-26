@@ -1,0 +1,6 @@
+packages: .
+
+--source-repository-package
+--  type: git
+--  location: https://github.com/regulatory-genomics/pandoc-crossref.git
+--  tag: 2e11975449fca6813fea210b0f02356d1866365f

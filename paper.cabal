@@ -38,6 +38,9 @@ library
       Text.Pandoc.Paper.Filters.LaTeX
       Text.Pandoc.Paper.Filters.Path
       Text.Pandoc.Paper.Filters.CrossRef
+      Text.Pandoc.Paper.Filters.CrossRef.Types
+      Text.Pandoc.Paper.Filters.CrossRef.Block
+      Text.Pandoc.Paper.Filters.CrossRef.Reference
       Text.Pandoc.Paper.Filters.Citations
       Text.Pandoc.Paper.Templates
       Text.Pandoc.Paper.CSL
@@ -63,16 +66,21 @@ library
     , http-client
     , http-client-tls
     , http-types
-    , mtl
+    , microlens >=0.4.12.0 && <0.5.0.0
+    , microlens-ghc >=0.4.3.10 && <0.5.0.0
+    , microlens-mtl >=0.2.0.1 && <0.3.0.0
+    , microlens-th >=0.4.3.10 && <0.5.0.0
+    , mtl >=1.1 && <2.4
     , network-uri
     , pandoc
     , pandoc-types
-    , pandoc-crossref
+--    , pandoc-crossref
     , parsec
     , shelly
     , temporary
     , text
     , unordered-containers
+    , utility-ht
     , vector
     , yaml
   default-language: Haskell2010

@@ -29,6 +29,7 @@ import Data.ByteString.Encoding (decode, utf8)
 import Text.Parsec (parse)
 import Text.Pandoc
 import Text.Pandoc.Walk (walkM)
+import Text.Pandoc.Builder
 import Text.Pandoc.Citeproc (processCitations)
 import Text.Pandoc.Writers.BibTeX (writeBibTeX)
 import Control.Monad.State.Lazy (State, modify, execState)
@@ -58,9 +59,12 @@ citeproc :: Maybe FilePath -- ^ Path to the bibliography file.
          -> Maybe B.ByteString
          -> Pandoc
          -> PandocIO Pandoc
-citeproc refFl cslData doc = case cslData of
-    Nothing -> addCitations doc
-    Just style -> withStyle style doc addCitations
+citeproc refFl cslData doc = do
+    Pandoc meta d <- case cslData of
+        Nothing -> addCitations doc
+        Just style -> withStyle style doc addCitations
+    let meta' = setMeta "linkBibliography" (MetaBool False) meta
+    return $ Pandoc meta' d
   where
     addCitations doc = do
         let refIDs = collectRefs doc
