@@ -64,7 +64,7 @@ instance Default Options where
         , rangeDelim = [Str "-"]
         , customLabel = \_ _ -> Nothing
         , nameInLink = False
-        , linkReferences = False
+        , linkReferences = True
         , refPrefixFormatter = defaultRefPrefixFormatter
         , titlePrefixFormatter = defaultTitlePrefixFormatter
         }

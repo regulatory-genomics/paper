@@ -59,12 +59,33 @@ citeproc :: Maybe FilePath -- ^ Path to the bibliography file.
          -> Maybe B.ByteString
          -> Pandoc
          -> PandocIO Pandoc
-citeproc refFl cslData doc = do
-    Pandoc meta d <- case cslData of
+citeproc refFl cslData (Pandoc meta main) = do
+    let supplement = case lookupMeta "supplement" meta of
+            Just (MetaBlocks blk) -> blk
+            _ -> []
+    (main', refs) <- processBlocks refFl cslData main
+    (supplement', supp_refs) <- processBlocks refFl cslData supplement
+
+    let meta' = setMeta "refs" (MetaBlocks refs) $
+            setMeta "supp_refs" (MetaBlocks supp_refs) $
+            setMeta "supplement" (MetaBlocks supplement') $ meta
+    return $ Pandoc meta' main'
+
+processBlocks :: Maybe FilePath -- ^ Path to the bibliography file.
+              -> Maybe B.ByteString
+              -> [Block]
+              -> PandocIO ([Block], [Block])
+processBlocks refFl cslData blks = do
+    let doc = flip Pandoc blks $
+            setMeta "link-citations" (MetaBool True) $
+            setMeta "linkBibliography" (MetaBool False) nullMeta
+    Pandoc (Meta meta) d <- case cslData of
         Nothing -> addCitations doc
         Just style -> withStyle style doc addCitations
-    let meta' = setMeta "linkBibliography" (MetaBool False) meta
-    return $ Pandoc meta' d
+    let refs = case M.lookup "refs" meta of
+            Just (MetaBlocks bs) -> bs
+            _ -> []
+    return (d, refs)
   where
     addCitations doc = do
         let refIDs = collectRefs doc
@@ -84,6 +105,7 @@ citeproc refFl cslData doc = do
                     printf "%d references from the web" (S.size refIDs)
                 refs <- getReferences (S.toList refIDs)
                 processCitations $ placeRefsInMeta "refs" doc <> refs
+
 
 -- | Put the references in the metadata using:
 -- $refAnchor: |
