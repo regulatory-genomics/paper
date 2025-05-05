@@ -1,6 +1,17 @@
-# paper
+# Paper: Writing scholarly document using Pandoc markdown
 
 A Pandoc-based app for scientific writing using Markdown.
+
+## Installation
+
+```
+cabal update
+cabal install
+```
+
+### Dependencies:
+
+- [tectonic](https://tectonic-typesetting.github.io/en-US/). 
 
 ## Usage
 
