@@ -1,7 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE FlexibleContexts #-}
-
 module Text.Pandoc.Paper.Filters.Citations
     ( citeproc
     ) where
@@ -13,29 +10,26 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Data.Set as S
 import qualified Data.Map as M
-import Control.Monad (forM)
 import System.Directory (doesFileExist)
 import System.IO
-import System.IO.Temp (withSystemTempFile)
 import Network.HTTP.Client (parseRequest, httpLbs, responseBody, requestHeaders, responseStatus)
-import Network.HTTP.Types.Status (Status, ok200, statusMessage)
+import Network.HTTP.Types.Status (ok200, statusMessage)
 import Network.HTTP.Client.TLS (newTlsManager)
-import Text.Pandoc.Readers.BibTeX (readBibTeX)
 import Text.BibTeX.Entry (identifier)
 import Control.Monad.IO.Class
 import qualified Text.BibTeX.Parse as P
 import qualified Text.BibTeX.Format as F
-import Data.ByteString.Encoding (decode, utf8)
+import Data.ByteString.Encoding (decode)
 import Text.Parsec (parse)
 import Text.Pandoc
 import Text.Pandoc.Walk (walkM)
 import Text.Pandoc.Builder
 import Text.Pandoc.Citeproc (processCitations)
-import Text.Pandoc.Writers.BibTeX (writeBibTeX)
-import Control.Monad.State.Lazy (State, modify, execState)
-import Text.Pandoc.Definition
-import Data.Either (rights)
+import Control.Monad.State.Lazy (modify, execState)
 import Text.Printf (printf)
+import Debug.Trace
+import Control.Exception (evaluate)
+import Control.DeepSeq (force)
 
 import Text.Pandoc.Paper.CSL
 
@@ -46,7 +40,10 @@ data CitationID = DOI T.Text
 -- | Download a reference entry from the web.
 -- Read BibTeX from an input string and return a Pandoc document. The document will have only metadata, with an empty body. The metadata will contain a references field with the bibliography entries, and a nocite field with the wildcard `[@*]`.
 getReferences :: [CitationID] -> PandocIO Pandoc
-getReferences ids = (T.unlines <$> mapM f ids) >>= readBibTeX def
+getReferences ids = do
+    r <- T.unlines <$> mapM f ids
+    traceM $ T.unpack r
+    readBibTeX def r
   where
     f (DOI i) = liftIO (getBibTexByDoi i) >>= \case
         Left err -> error $ B.unpack err
@@ -91,10 +88,12 @@ processBlocks refFl cslData blks = do
         let refIDs = collectRefs doc
         case refFl of
             Just fl -> do
-                fileExists <- liftIO $ doesFileExist fl
-                idsToCollect <- if fileExists
-                    then liftIO $ (refIDs `S.difference`) . S.fromList . getBibIds <$> readFile fl
-                    else return refIDs
+                idsToCollect <- liftIO $ doesFileExist fl >>= \case
+                    True -> do
+                        contents <- withFile fl ReadMode $ \h -> evaluate . force =<< hGetContents h
+                        return $ S.difference refIDs $ S.fromList $ getBibIds contents
+                    False -> return refIDs
+
                 when (S.size idsToCollect > 0) $ report $ Fetching $ T.pack $
                     printf "%d references from the web" (S.size idsToCollect)
                 refs <- getReferences (S.toList idsToCollect) >>= writeBibTeX def
@@ -141,7 +140,7 @@ getBibTexByDoi doi = do
     response <- httpLbs request{requestHeaders=[("Accept", "application/x-bibtex")]} manager
     let status = responseStatus response
     return $ if status == ok200
-        then Right $ changeId doi $ decode utf8 $ BL.toStrict $ responseBody response
+        then Right $ changeId doi $ T.strip $ decode utf8 $ BL.toStrict $ responseBody response
         else Left $ statusMessage status
   where
     url = baseUrl <> T.unpack (T.drop 4 doi)

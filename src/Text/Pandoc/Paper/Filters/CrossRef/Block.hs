@@ -1,7 +1,7 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell, GeneralizedNewtypeDeriving, RankNTypes, DataKinds, RecordWildCards, LambdaCase #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Text.Pandoc.Paper.Filters.CrossRef.Block (replaceBlock) where
 
-import Control.Monad.State
+import Control.Monad (when)
 import Control.Monad.Reader
 import Control.Applicative
 import Text.Pandoc.Walk (walk)
@@ -14,7 +14,6 @@ import Lens.Micro.Mtl
 import Text.Pandoc.Definition
 import qualified Data.Sequence as S
 import Data.Sequence (ViewR(..))
-import Text.Pandoc.Builder hiding ((<>))
 import Text.Pandoc.Shared (blocksToInlines)
 
 import Text.Pandoc.Paper.Filters.CrossRef.Types
@@ -30,10 +29,10 @@ replaceBlock blk = do
     getRefType label prefixes
         | "fig:" `T.isPrefixOf` label = Just RefImage
         | "tbl:" `T.isPrefixOf` label = Just RefTable
-        | otherwise =
-            let p = filter (\x -> x `T.isPrefixOf` label) prefixes
-            in if length p == 1
-                then Just $ RefCustom $ T.dropEnd 1 $ head p
+        | otherwise = do
+            (p, ps) <- uncons $ filter (\x -> x `T.isPrefixOf` label) prefixes
+            if null ps
+                then Just $ RefCustom $ T.dropEnd 1 p
                 else Nothing
     replaceBlockHelper prefixes fig@(Figure (label, c, attrs) caption content)
         | Just refType <- getRefType label prefixes = do

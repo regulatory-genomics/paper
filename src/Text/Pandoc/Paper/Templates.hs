@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
 module Text.Pandoc.Paper.Templates
     ( loadTemplate
     , defaultLaTeXTemplate
@@ -10,7 +9,7 @@ import Text.Pandoc
 import qualified Data.Text.IO as T
 import qualified Data.Text as T
 import qualified Data.ByteString.Char8 as B
-import Control.Monad.IO.Class (liftIO, MonadIO)
+import Control.Monad.IO.Class (liftIO)
 
 import Text.Pandoc.Paper.Internal (latexTemplateFile, htmlTemplateFile)
 

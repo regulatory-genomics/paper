@@ -1,15 +1,10 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Text.Pandoc.Paper.Internal where
 
-import Citeproc
-import Text.Pandoc (runWithPartials, PandocIO, Pandoc(..), Meta(..), MetaValue(..), Template, compileTemplate)
 import Data.FileEmbed
-import qualified Data.Map as M
 import qualified Data.ByteString.Char8 as B
-import qualified Data.Text as T
 
 latexTemplateFile :: B.ByteString
 latexTemplateFile = $(embedFile "data/default.tex")

@@ -1,7 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE FlexibleContexts #-}
-
 module Text.Pandoc.Paper.Filters
     ( citeproc
     , crossref
@@ -20,7 +17,6 @@ import Text.Pandoc.Paper.Filters.Authors (addAuthors)
 import Text.Pandoc.Walk (walk, query)
 import Text.Pandoc.Definition
 import Text.Pandoc.Builder
-import Text.Pandoc (PandocIO)
 
 placeImagesAtEnd :: Pandoc -> Pandoc
 placeImagesAtEnd (Pandoc meta blks) = Pandoc meta' $ blks'
@@ -34,9 +30,9 @@ placeImagesAtEnd (Pandoc meta blks) = Pandoc meta' $ blks'
         walkable' = walk (filter f) walkable
           where
             f (Figure _ _ _) = False
-            f x = True
+            f _ = True
         figs = let f x@(Figure _ _ _) = [x]
                    f _ = []
                    g (Image _ _ _) = False
-                   g x = True
+                   g _ = True
                 in walk (filter g) $ query f walkable

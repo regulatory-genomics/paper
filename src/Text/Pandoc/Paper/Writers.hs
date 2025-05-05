@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Text.Pandoc.Paper.Writers
     ( writeDocx'
@@ -6,7 +5,6 @@ module Text.Pandoc.Paper.Writers
     ) where
 
 import Text.Pandoc
-import Data.Default
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString as B
 import qualified Data.Text as T

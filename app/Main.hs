@@ -1,21 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE FlexibleContexts #-}
 module Main where
 
 import Control.Monad (when, forM_)
 import Text.Pandoc
-import Text.DocTemplates (toContext)
 import Text.Pandoc.SelfContained (makeSelfContained)
 import qualified Data.Text.IO as T
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8 as B
-import qualified Data.Map as M
-import Shelly (shelly, bash_, cp, liftIO, mkdir_p, test_d)
-import System.FilePath.Posix (takeBaseName, takeDirectory)
+import Shelly (shelly, bash_, liftIO, mkdir_p, test_d)
+import System.FilePath.Posix (takeDirectory)
 import System.Directory (setCurrentDirectory, makeAbsolute)
 import           Data.Version                      (showVersion)
 import           Options.Applicative
@@ -118,7 +114,9 @@ initProject InitOpts{..} = do
         exists <- test_d _proj_dir
         when exists $ error "Project directory already exists."
         mkdir_p _proj_dir
-    forM_ template $ \(file, content) -> B.writeFile (_proj_dir <> "/" <> file) content
+    forM_ template $ \(file, content) -> do
+        shelly $ mkdir_p $ _proj_dir <> "/" <> takeDirectory file
+        B.writeFile (_proj_dir <> "/" <> file) content
 
 compileDocument :: BuildOpts -> IO ()
 compileDocument BuildOpts{..} = runIOorExplode $ do

@@ -1,14 +1,14 @@
-cabal-version: 1.12
+cabal-version: 3.0
 
 name:           paper
-version:        0.2.0
+version:        0.3.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/paper#readme>
-homepage:       https://github.com/kaizhang/paper#readme
-bug-reports:    https://github.com/kaizhang/paper/issues
+homepage:       https://github.com/regulatory-genomics/paper#readme
+bug-reports:    https://github.com/regulatory-genomics/paper/issues
 author:         Kai Zhang
 maintainer:     kai@kzhang.org
-copyright:      2023 Kai Zhang
-license:        BSD3
+copyright:      2023-2025 Kai Zhang
+license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
@@ -25,7 +25,7 @@ data-files:
 
 source-repository head
   type: git
-  location: https://github.com/kaizhang/paper
+  location: https://github.com/regulatory-genomics/paper
 
 library
   ghc-options: -O2 -Wall -Wcompat -Wincomplete-record-updates
@@ -50,13 +50,14 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      base >=4.21 && <5
     , aeson
     , bytestring >= 0.11.0
     , bytestring-encoding
     , bibtex
     , citeproc
     , containers
+    , deepseq
     , data-default
     , directory
     , doclayout
@@ -83,7 +84,7 @@ library
     , utility-ht
     , vector
     , yaml
-  default-language: Haskell2010
+  default-language: GHC2024
 
 executable paper
   main-is: Main.hs
@@ -93,7 +94,7 @@ executable paper
       app
   ghc-options: -O2 -Wall -threaded
   build-depends:
-      base >=4.7 && <5
+      base >=4.21 && <5
     , aeson-pretty
     , bytestring
     , citeproc
@@ -116,4 +117,4 @@ executable paper
     , shelly
     , temporary
     , text
-  default-language: Haskell2010
+  default-language: GHC2024

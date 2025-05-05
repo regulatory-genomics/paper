@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Text.Pandoc.Paper.Readers (readYaml, readDoc) where
 

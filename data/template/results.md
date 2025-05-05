@@ -2,7 +2,7 @@
 
 ## This is a header {-}
 
-Citations can be easily added using the DOI, for example [@doi:10.1038/s41592-019-0367-1].
+Citations can be easily added using the DOI, for example [@doi:10.1038/s41592-023-02139-9].
 
 ## This is another header {-}
 
@@ -17,4 +17,4 @@ We can refer to figures using the `fig:` prefix, for example [@Fig:fig1].
     **a,** Donec eu malesuada lectus. Fusce ullamcorper nibh nec mauris gravida consectetur. Aliquam faucibus sit amet lorem eget porta. Suspendisse ex nulla, suscipit sed augue id, mollis semper arcu. Aenean et tempor purus. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean nec posuere nisl, eget vehicula est.
     **b,** Donec eu malesuada lectus. Fusce ullamcorper nibh nec mauris gravida consectetur. Aliquam faucibus sit amet lorem eget porta. Suspendisse ex nulla, suscipit sed augue id, mollis semper arcu. Aenean et tempor purus. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean nec posuere nisl, eget vehicula est.
     **c,** Donec eu malesuada lectus. Fusce ullamcorper nibh nec mauris gravida consectetur. Aliquam faucibus sit amet lorem eget porta. Suspendisse ex nulla, suscipit sed augue id, mollis semper arcu. Aenean et tempor purus. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean nec posuere nisl, eget vehicula est.
-](Figure1.pdf){#fig:fig1}
+](figures/Gull.jpg){#fig:fig1}

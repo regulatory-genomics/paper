@@ -4,15 +4,8 @@ module Text.Pandoc.Paper.Filters.CrossRef
     ( crossref
     ) where
 
-import           Control.Monad
-import qualified Data.Map as M
 import qualified Control.Monad.Reader  as R
 import Control.Monad.State (runState)
-import Control.Monad.IO.Class (liftIO)
-import           Data.List
-import           System.Directory
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import Text.Pandoc
 import Text.Pandoc.Builder
 import Text.Pandoc.Walk
