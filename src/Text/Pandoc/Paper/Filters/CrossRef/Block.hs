@@ -50,19 +50,20 @@ replaceBlock blk = do
                 caption' = addPrefixToCaption prefix caption
             return $ Table (tattr, c, attrs) caption' colspec header cells foot
         | otherwise = return table
-    replaceBlockHelper prefixes div@(Div attr@(label, _, _) [Table tattr (Caption short (btitle:rest)) colspec header cells foot])
+    replaceBlockHelper prefixes divBlock@(Div attr@(label, _, _) [Table tattr (Caption short (btitle:rest)) colspec header cells foot])
         | Just refType <- getRefType label prefixes = do
             opts <- ask :: WS Options
             formattedIndex <- replaceAttr label [] refType
             let prefix = titlePrefixFormatter opts refType formattedIndex
                 caption' = addPrefixToCaption prefix (Caption short (btitle:rest))
             return $ Div attr [Table tattr caption' colspec header cells foot]
-        | otherwise = return div
+        | otherwise = return divBlock
     replaceBlockHelper _ x = return x
 
 addPrefixToCaption :: [Inline] -> Caption -> Caption
 addPrefixToCaption prefix (Caption short (b:blks)) = Caption short (b':blks)
     where b' = addPrefixToBlock prefix b
+addPrefixToCaption _ caption = caption
 
 addPrefixToBlock :: [Inline] -> Block -> Block
 addPrefixToBlock prefix block = case block of

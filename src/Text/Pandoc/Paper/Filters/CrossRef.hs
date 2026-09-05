@@ -16,17 +16,17 @@ import Text.Pandoc.Paper.Filters.CrossRef.Reference
 
 -- | This function traverses the AST and add cross references for figures and tables
 crossref :: Pandoc -> Pandoc
-crossref p@(Pandoc meta blks) = case nSupp of
+crossref (Pandoc meta blks) = case nSupp of
     0 -> Pandoc meta' blk'
     _ -> let revBlk = reverse blk'
              supp = reverse $ take nSupp revBlk
              rest = reverse $ drop nSupp revBlk
           in Pandoc (setMeta "supplement" (MetaBlocks supp) meta') rest
   where
-    Pandoc meta' blk' = R.runReader (crossRefAction doc) env
-    (nSupp, doc) = case lookupMeta "supplement" meta of
+    Pandoc meta' blk' = R.runReader (crossRefAction sourceDoc) env
+    (nSupp, sourceDoc) = case lookupMeta "supplement" meta of
         Just (MetaBlocks supplement) -> (length supplement, Pandoc meta $ blks <> supplement)
-        Nothing -> (0, Pandoc meta blks)
+        _ -> (0, Pandoc meta blks)
     env = CrossRefEnv {
             creSettings = meta
           , creOptions = def

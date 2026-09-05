@@ -20,19 +20,19 @@ import Text.Pandoc.Builder
 
 placeImagesAtEnd :: Pandoc -> Pandoc
 placeImagesAtEnd (Pandoc meta blks) = Pandoc meta' $ blks'
-    <> toList (header 2 $ text "Figures") <> figs
+     <> toList (header 2 $ text "Figures") <> figs
     <> toList (header 2 $ text "Supplementary Figures") <> suppFigs
   where
     (meta', suppFigs) = collectFigures meta
     (blks', figs) = collectFigures blks
-    collectFigures walkable = (walkable', figs)
+    collectFigures walkable = (walkable', figureBlocks)
       where
         walkable' = walk (filter f) walkable
           where
             f (Figure _ _ _) = False
             f _ = True
-        figs = let f x@(Figure _ _ _) = [x]
-                   f _ = []
-                   g (Image _ _ _) = False
-                   g _ = True
-                in walk (filter g) $ query f walkable
+        figureBlocks = let figureList x@(Figure _ _ _) = [x]
+                           figureList _ = []
+                           g (Image _ _ _) = False
+                           g _ = True
+                       in walk (filter g) $ query figureList walkable

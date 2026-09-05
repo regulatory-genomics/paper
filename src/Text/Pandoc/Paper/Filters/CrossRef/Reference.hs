@@ -1,28 +1,16 @@
 {-# LANGUAGE OverloadedStrings, LambdaCase, TemplateHaskell, GeneralizedNewtypeDeriving, RankNTypes, DataKinds, RecordWildCards #-}
 module Text.Pandoc.Paper.Filters.CrossRef.Reference where
 
-import Control.Monad.State
-import Control.Monad.Reader
-import Control.Applicative
-import Text.Read (readMaybe)
-import qualified Data.Map as M
-import Data.Maybe
-import qualified Data.Text as T
-import Lens.Micro.Mtl
 import Text.Pandoc.Definition
-import qualified Data.Sequence as S
-import Data.Sequence (ViewR(..))
 import Text.Pandoc.Builder hiding ((<>))
+import Control.Monad.Reader (ask)
 
 import Control.Arrow as A
-import Control.Monad.Reader
 import Data.Function
 import Data.List
 import qualified Data.List.HT as HT
 import qualified Data.Map as M
-import Data.Maybe
 import qualified Data.Text as T
-import Text.Pandoc.Builder
 import qualified Data.Sequence as S
 import Data.Sequence (ViewR(..))
 import Control.Monad (liftM2, join)
@@ -65,16 +53,17 @@ citationGroupPred :: Citation -> Citation -> Bool
 citationGroupPred = (==) `on` liftM2 (,) citationPrefix citationMode
 
 replaceRefsOther' :: [RefType] -> RefType -> Options -> [Citation] -> WS [Inline]
-replaceRefsOther' refTypes prefix opts cits = do
+replaceRefsOther' refTypes prefix opts cits@(firstCitation:_) = do
   indices <- mapM (getRefIndex prefix opts) cits
-  let cap = maybe False isFirstUpper $ getLabelPrefix refTypes . citationId . head $ cits
+  let cap = maybe False isFirstUpper $ getLabelPrefix refTypes . citationId $ firstCitation
       writePrefix | all ((==SuppressAuthor) . citationMode) cits = id
                   | all (null . citationPrefix) cits = cmap $
                       refPrefixFormatter opts prefix cap
-                  | otherwise = cmap $ toList . ((fromList (citationPrefix (head cits)) <> space) <>) . fromList
+                  | otherwise = cmap $ toList . ((fromList (citationPrefix firstCitation) <> space) <>) . fromList
       cmap f [Link attr t w] | nameInLink opts = [Link attr (f t) w]
       cmap f x = f x
   return $ writePrefix (makeIndices opts indices)
+replaceRefsOther' _ _ _ [] = return []
 
 allCitsPrefix :: [RefType] -> [Citation] -> Maybe RefType
 allCitsPrefix refTypes cits = find isCitationPrefix refTypes
@@ -156,7 +145,7 @@ makeIndices o s = format $ concatMap f $ HT.groupBy g $ sort $ nub s
   show'' (RefSingle x) = show' x
   show'' (RefRange x y) = show' x <> fromList (rangeDelim o) <> show' y
   show' :: RefData -> Inlines
-  show' RefData{rdLabel=l, rdIdx=Just i, rdSuffix = suf, rdPfx=pfx}
+  show' RefData{rdLabel=l, rdIdx=Just i}
       | linkReferences o = link ('#' `T.cons` l) "" (fromList txt)
       | otherwise = fromList txt
     where

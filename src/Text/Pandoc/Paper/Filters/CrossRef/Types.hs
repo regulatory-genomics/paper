@@ -51,7 +51,7 @@ defaultTitlePrefixFormatter RefTable i = toList $ strong $ text "Table " <> from
 defaultTitlePrefixFormatter RefSection i = toList $ strong $ text "Section " <> fromList i <> text " | "
 defaultTitlePrefixFormatter (RefCustom "supp_fig") i = toList $ strong $ text "Supplementary Fig. " <> fromList i <> text " | "
 defaultTitlePrefixFormatter (RefCustom "ext_fig") i = toList $ strong $ text "Extended Data Fig. " <> fromList i <> text " | "
-defaultTitlePrefixFormatter (RefCustom t) i = toList $ strong $ text t <> text " | "
+defaultTitlePrefixFormatter (RefCustom t) _ = toList $ strong $ text t <> text " | "
   
 instance Default Options where
     def = Options
