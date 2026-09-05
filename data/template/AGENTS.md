@@ -21,14 +21,17 @@ project/
 ├── discussion.md
 ├── methods.md
 ├── acknowledgements.md
+├── syntax.md               # buildable Pandoc Markdown syntax examples
 ├── supplement.md
 ├── bibliography.bib       # created or extended when DOI citations are used
 └── figures/
     └── ...
 ```
 
-The section files and `figures/` directory are examples, not reserved names.
-Any files listed by `metadata.yaml` may be used.
+The section files, `syntax.md`, and `figures/` directory are examples, not
+reserved names. Any files listed by `metadata.yaml` may be used. `syntax.md`
+is a buildable showcase of the Markdown grammar enabled by Paper and can be
+removed from a real manuscript project if it is not needed.
 
 Create a project with:
 

@@ -6,6 +6,22 @@ keywords:
   - Paper
 
 author:
+  - name: Ada Researcher
+    email: ada.researcher@example.org
+    affiliations:
+      - School of Life Sciences, Westlake University, Hangzhou, Zhejiang, China
+      - Center for Computational Discovery, Example Institute, Example City
+    equal_contribution: true
+  - name: Linus Scientist
+    email: linus.scientist@example.org
+    affiliations:
+      - Center for Computational Discovery, Example Institute, Example City
+    equal_contribution: true
+  - name: Grace Investigator
+    email: grace.investigator@example.org
+    affiliations:
+      - Department of Quantitative Biology, Example University, Example City
+    corresponding: true
   - github: kaizhang
     name: Kai Zhang
     email: zhangkai33@westlake.edu.cn
@@ -28,6 +44,7 @@ contents:
   - discussion.md
   - methods.md
   - acknowledgements.md
+  - syntax.md
 
 supplement:
   - supplement.md
