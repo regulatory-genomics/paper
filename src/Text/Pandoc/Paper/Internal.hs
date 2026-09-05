@@ -25,4 +25,7 @@ cslAPA :: B.ByteString
 cslAPA = $(embedFile "data/apa.csl")
 
 template :: [(FilePath, B.ByteString)]
-template = $(embedDir "data/template")
+template = ("AGENTS.md", agentsTemplate) : filter ((/= "AGENTS.md") . fst) $(embedDir "data/template")
+
+agentsTemplate :: B.ByteString
+agentsTemplate = $(embedFile "data/template/AGENTS.md")

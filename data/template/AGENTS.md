@@ -208,6 +208,45 @@ When `--no-embed-fig` is not supplied, image paths are converted to absolute
 paths before writing. With `--no-embed-fig`, figures are moved to generated
 `Figures` and `Supplementary Figures` sections at the end of the document.
 
+### Supplementary Figures
+
+Put supplementary figures in a Markdown file listed under `supplement` in
+`metadata.yaml`:
+
+```yaml
+contents:
+  - introduction.md
+  - results.md
+
+supplement:
+  - supplement.md
+```
+
+Use the `supp_fig:` label prefix for supplementary figures:
+
+```markdown
+![Supplementary measurements](figures/supplementary-measurements.png){#supp_fig:measurements}
+```
+
+Reference the figure with the same label:
+
+```markdown
+The supplementary measurements are shown in [@supp_fig:measurements].
+```
+
+Paper numbers supplementary figures separately from main figures and formats
+their captions and references as `Supplementary Fig. N`. Use `supp_fig:` rather
+than `fig:` when the figure belongs to supplementary material:
+
+```markdown
+![Main figure](figures/main.png){#fig:main}
+![Supplementary figure](figures/supplementary.png){#supp_fig:supplementary}
+```
+
+With `--no-embed-fig`, supplementary figures are collected into the generated
+`Supplementary Figures` section at the end of the document. Without that flag,
+they remain in their original positions in the supplementary content.
+
 ## Tables
 
 Tables use Pandoc table syntax. A table label should begin with `tbl:`. For
@@ -238,6 +277,8 @@ Cross-reference labels use a type prefix followed by a colon and an identifier:
 | `fig:` | Figure | `Fig.` or `figure` |
 | `tbl:` | Table | `Table` or `table` |
 | `sec:` | Section | `Section` or `section` |
+| `supp_fig:` | Supplementary figure | `Supplementary Fig.` |
+| `ext_fig:` | Extended Data figure | `Extended Data Fig.` |
 | custom prefix | Custom reference type | The prefix text |
 
 Reference a labeled object with a Pandoc citation:
