@@ -1,13 +1,13 @@
 cabal-version: 3.0
 
 name:           paper
-version:        0.3.0
+version:        0.3.2
 description:    Please see the README on GitHub at <https://github.com/githubuser/paper#readme>
 homepage:       https://github.com/regulatory-genomics/paper#readme
 bug-reports:    https://github.com/regulatory-genomics/paper/issues
 author:         Kai Zhang
 maintainer:     kai@kzhang.org
-copyright:      2023-2025 Kai Zhang
+copyright:      2023-2026 Kai Zhang
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
@@ -75,7 +75,6 @@ library
     , network-uri
     , pandoc
     , pandoc-types
---    , pandoc-crossref
     , parsec
     , shelly
     , temporary
