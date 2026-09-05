@@ -2,8 +2,6 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
 
 permissions:
   contents: write
@@ -86,6 +84,7 @@ jobs:
   release:
     name: Publish GitHub release
     needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Download release artifacts
