@@ -28,7 +28,7 @@ source-repository head
   location: https://github.com/regulatory-genomics/paper
 
 library
-  ghc-options: -O2 -Wall -Wcompat -Wincomplete-record-updates
+  ghc-options: -O2 -Wall -Wcompat -Wincomplete-record-updates -Wno-unused-imports -Wno-name-shadowing -Wno-type-defaults -Wno-incomplete-patterns -Wno-incomplete-uni-patterns -Wno-x-partial
   exposed-modules:
       Text.Pandoc.Paper
       Text.Pandoc.Paper.Writers
@@ -92,7 +92,7 @@ executable paper
       Paths_paper
   hs-source-dirs:
       app
-  ghc-options: -O2 -Wall -threaded
+  ghc-options: -O2 -Wall -threaded -Wno-unused-imports -Wno-name-shadowing -Wno-type-defaults -Wno-incomplete-patterns -Wno-incomplete-uni-patterns -Wno-x-partial
   build-depends:
       base >=4.21 && <5
     , aeson-pretty

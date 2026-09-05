@@ -76,7 +76,7 @@ placeFigure x = return x
 -}
 
 tableToLaTeX :: Block -> Block
-tableToLaTeX t@(Table (ident, _, _) (Caption _ caption) specs (TableHead _ thead) tbodies (TableFoot _ tfoot)) =
+tableToLaTeX (Table _ (Caption _ caption) _ (TableHead _ thead) tbodies (TableFoot _ tfoot)) =
     let txt = T.unlines
             [ "\\begin{table*}"
             , "\\centering"

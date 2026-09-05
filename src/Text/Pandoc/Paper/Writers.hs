@@ -36,7 +36,7 @@ writeDocx' opts (Pandoc meta doc) = withSystemTempFile "tmp.dotx" $ \fl h -> do
 writeHtml :: WriterOptions -> Pandoc -> PandocIO T.Text
 writeHtml opts (Pandoc meta doc) = writeHtml5String opts' document
   where
-    opts' = opts{writerHTMLMathMethod = MathJax "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"}
+    opts' = opts{writerMathMethod = MathJax "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"}
     document = Pandoc meta $ doc ++ refs ++ supplement ++ supp_refs
     refs = case lookupMeta "refs" meta of
         Just (MetaBlocks blk) -> blk

@@ -2,6 +2,10 @@
 
 A Pandoc-based app for scientific writing using Markdown.
 
+See [data/template/AGENTS.md](data/template/AGENTS.md) for the complete project format specification,
+including metadata, Markdown, figures, tables, citations, cross-references,
+and build outputs.
+
 ## Installation
 
 ```
