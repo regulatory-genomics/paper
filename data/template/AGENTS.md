@@ -139,7 +139,7 @@ Supported author fields:
 | `email` | string | Email address used for correspondence output. |
 | `affiliations` | list of strings | Affiliations associated with the author. |
 | `corresponding` | boolean | Marks the author as corresponding author. |
-| `equal_contribution` | boolean | Retained in author metadata for templates. |
+| `equal_contribution` | boolean | Adds a `*` author mark after affiliation marks and the note `* These authors contributed equally` after the affiliation list. |
 | `marks` | list of strings | Additional author marks. |
 
 Paper deduplicates affiliations and assigns numeric superscript marks in the

@@ -49,15 +49,18 @@ addAuthors format (Pandoc meta blocks) = Pandoc meta' blocks
     meta' = case format of
         "latex" -> setMeta "author" authors $
             setMeta "affiliation" affs $
-            meta
+            setEqualContribution meta
         _ -> setMeta "author" authorBlock meta
     (authors, affs) = addMarks $ readAuthors meta
     authorBlock =
         let authors' = para $ combineAuthors $ map formatAuthor authors
-            affs' = para $ mconcat $ intersperse linebreak $ map formatAffliation affs
+            affs' = para $ mconcat (intersperse linebreak (map formatAffliation affs))
+                <> if any equal_contribution authors
+                    then linebreak <> text "* These authors contributed equally"
+                    else mempty
             corresponding_authors = map (\x -> name x <> " (" <> fromJust (email x) <> ")") $
                 filter corresponding authors
-            corres = para $ text $ "Correspondence: " <> T.intercalate ", " corresponding_authors
+            corres = para $ text $ "✉ Correspondence: " <> T.intercalate ", " corresponding_authors
         in [authors', affs', corres]
 
     formatAuthor :: Author -> Inlines
@@ -72,10 +75,18 @@ addAuthors format (Pandoc meta blocks) = Pandoc meta' blocks
         spacer | length authors == 2 = text " and "
                | otherwise = text ", "
 
+    setEqualContribution metadata
+        | any equal_contribution authors = setMeta "equal-contribution"
+            (MetaBool True) metadata
+        | otherwise = metadata
+
 addMarks :: [Author] -> ([Author], [Affiliation])
 addMarks authors = (map addMark authors, map f $ sortBy (comparing snd) $ M.toList aff)
   where
-    addMark author = author { marks = map (T.pack . show) $ sort $ map (\x -> M.findWithDefault undefined x aff) $ affiliations author }
+    addMark author = author
+        { marks = map (T.pack . show) (sort $ map (\x -> M.findWithDefault undefined x aff) $ affiliations author)
+            <> (if equal_contribution author then ["*"] else [])
+        }
     aff = M.fromList $ zip (nub $ concatMap affiliations authors) [1..]
     f (name, k) = Affiliation { aff_mark = T.pack $ show k, aff_name = name }
 
