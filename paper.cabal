@@ -21,7 +21,7 @@ data-files:
     data/*.csl
     data/template/*.md
     data/template/*.yaml
-    data/template/*.pdf
+    data/template/figures/Gull.jpg
 
 source-repository head
   type: git

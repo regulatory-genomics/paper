@@ -42,6 +42,14 @@ $$
 \int_0^1 x^2\,dx = \frac{1}{3}
 $$
 
+The default LaTeX template defines `argmax` and `argmin` as mathematical
+operators:
+
+$$
+\hat{x} = \argmax_{x \in X} f(x), \qquad
+\hat{x} = \argmin_{x \in X} f(x)
+$$
+
 LaTeX macros can be declared and used in math:
 
 \newcommand{\R}{\mathbb{R}}
@@ -119,6 +127,29 @@ Line blocks preserve line-oriented text:
 ---
 
 The horizontal rule above separates blocks.
+
+## Comments
+
+Use HTML comment syntax for editorial notes that should remain in the Markdown
+source but not be displayed in rendered output:
+
+<!-- This single-line comment is omitted from the rendered document. -->
+
+Comments can span multiple lines:
+
+<!--
+This is a multiline editorial comment.
+It is hidden from the rendered document.
+-->
+
+Visible text before and after a comment is rendered normally.
+
+<!-- TODO: Replace this example sentence before submission. -->
+
+This sentence appears after the hidden TODO comment.
+
+HTML comments can remain in generated HTML source, but web browsers do not
+display them. They are omitted when Paper writes LaTeX, PDF, or DOCX content.
 
 Raw HTML is preserved for HTML-capable writers:
 

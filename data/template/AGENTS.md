@@ -182,6 +182,31 @@ An unnumbered heading can be written with the `{-}` attribute:
 # Introduction {-}
 ```
 
+### Comments
+
+Use HTML comment syntax for editorial notes that must remain in the Markdown
+source but not be displayed in the rendered document:
+
+```markdown
+<!-- This comment is omitted from the rendered output. -->
+```
+
+Comments can span multiple lines:
+
+```markdown
+<!--
+TODO: Verify these measurements before submission.
+This entire block is hidden from the rendered document.
+-->
+```
+
+HTML comments are portable across Paper's HTML, DOCX, LaTeX, and PDF outputs.
+They may remain in generated HTML source because Paper enables raw HTML, but
+browsers do not display them. They are omitted from rendered LaTeX, PDF, and
+DOCX content. YAML `#` comments should be used only inside YAML metadata;
+outside metadata, `#` introduces a heading. LaTeX `%` comments should be used
+only in raw LaTeX and are not portable to HTML or DOCX.
+
 ## Figures
 
 Use standard Pandoc image syntax and give figures an explicit `fig:` label:
