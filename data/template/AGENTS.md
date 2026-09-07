@@ -176,11 +176,9 @@ with the following notable extensions enabled:
 Pandoc automatic identifiers are not enabled. Add explicit identifiers when a
 heading, figure, or table must be referenced.
 
-An unnumbered heading can be written with the `{-}` attribute:
-
-```markdown
-# Introduction {-}
-```
+Headings in the bundled LaTeX template are unnumbered by default in the main
+text. Use Pandoc's unnumbered-heading attribute when a heading must be
+explicitly unnumbered for another output format.
 
 ### Comments
 

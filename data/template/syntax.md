@@ -1,4 +1,4 @@
-# Markdown Syntax Showcase {-}
+# Markdown Syntax Showcase
 
 This file demonstrates the Pandoc Markdown features enabled by Paper. The
 examples are intentionally small so they can be copied into manuscript files.
@@ -229,7 +229,7 @@ Supplementary figures belong in a file listed under `supplement` and use the
 ## Sections and References
 
 This heading has an explicit identifier and can be referenced as
-`[@sec:syntax-text]`. The `{-}` attribute on the top-level heading makes it
+`[@sec:syntax-text]`. The bundled LaTeX template leaves top-level headings
 unnumbered.
 
 Multiple references can be grouped: [@fig:showcase; @fig:panels]. Citation

@@ -1,4 +1,4 @@
-# Introduction {-}
+# Introduction
 
 In recent years, the scientific community has experienced a significant increase in the production and dissemination of research papers. This growing demand has led to a pressing need for more efficient and accessible tools to facilitate the writing, collaboration, and sharing of scientific work. Traditional word processing software, such as Microsoft Word and Google Docs, while popular, often introduce challenges in terms of complex formatting, limited version control, and insufficient integration with reference management systems. These limitations can create additional barriers to the efficient and timely completion of research manuscripts.
 

@@ -1,4 +1,4 @@
-# Discussion {-}
+# Discussion
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam et pretium nisl. In non eros leo. Aenean et pharetra justo. Nulla at lacus nunc. Proin odio neque, euismod ut placerat eget, consequat nec velit. Suspendisse tincidunt, mi et egestas consectetur, purus tellus egestas urna, eu lacinia mi nibh blandit libero. Ut leo tortor, molestie sed aliquet non, maximus id leo.
 
