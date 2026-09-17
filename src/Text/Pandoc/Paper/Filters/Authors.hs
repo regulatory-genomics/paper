@@ -49,6 +49,7 @@ addAuthors format (Pandoc meta blocks) = Pandoc meta' blocks
     meta' = case format of
         "latex" -> setMeta "author" authors $
             setMeta "affiliation" affs $
+            setMeta "lead-author" (leadAuthor authors) $
             setEqualContribution meta
         _ -> setMeta "author" authorBlock meta
     (authors, affs) = addMarks $ readAuthors meta
@@ -80,9 +81,13 @@ addAuthors format (Pandoc meta blocks) = Pandoc meta' blocks
             (MetaBool True) metadata
         | otherwise = metadata
 
+-- | Lead author surname: last word of the first author's name.
+leadAuthor :: [Author] -> T.Text
+leadAuthor []    = ""
+leadAuthor (a:_) = last (T.words (name a))
+
 addMarks :: [Author] -> ([Author], [Affiliation])
-addMarks authors = (map addMark authors, map f $ sortBy (comparing snd) $ M.toList aff)
-  where
+addMarks authors = (map addMark authors, map f $ sortBy (comparing snd) $ M.toList aff)  where
     addMark author = author
         { marks = map (T.pack . show) (sort $ map (\x -> M.findWithDefault undefined x aff) $ affiliations author)
             <> (if equal_contribution author then ["*"] else [])

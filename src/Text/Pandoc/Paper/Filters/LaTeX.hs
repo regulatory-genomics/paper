@@ -32,7 +32,7 @@ placeFigure draft (Figure (ident, _, _) (Caption _ caption) fig) = do
     let classes = query getClasses fig
     caption' <- writeLaTeX def $ Pandoc (Meta M.empty) caption
     fig' <- writeLaTeX def $ Pandoc (Meta M.empty) fig
-    let env = if draft then "figure" else "figure*"
+    let (env, opt) = if draft then ("figure", "") else ("figure*", "[t]")
     if "side-caption" `elem` classes
         then return $ RawBlock "tex" $ T.pack $ printf
             ( "\\begin{SC%s}[1]\\begin{wide}"
@@ -42,13 +42,13 @@ placeFigure draft (Figure (ident, _, _) (Caption _ caption) fig) = do
             <> "\\end{wide}\\end{SC%s}"
             ) env (T.unpack fig') (T.unpack caption') ident env
         else return $ RawBlock "tex" $ T.pack $ printf
-            ( "\\begin{%s}"
+            ( "\\begin{%s}%s"
             <> "\\centering"
             <> "%s"
             <> "\\caption{%s}"
             <> "\\label{%s}"
             <> "\\end{%s}"
-            ) env (T.unpack fig') (T.unpack caption') ident env
+            ) env opt (T.unpack fig') (T.unpack caption') ident env
   where
     getClasses (Image (_, classes, _) _ _) = classes
     getClasses _ = []
