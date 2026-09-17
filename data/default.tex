@@ -10,8 +10,7 @@
 \makeatother
 
 %% and math support and fonts
-\usepackage{amsmath,amsfonts,amssymb}
-\usepackage{mathptmx}
+\usepackage{amsmath}
 \usepackage[normalem]{ulem}
 \usepackage{soul}
 \DeclareMathOperator*{\argmax}{arg\,max}
@@ -28,9 +27,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{xcolor}
 \usepackage{authblk}
-\usepackage{lmodern}
-\usepackage[scaled]{helvet}
-\usepackage[T1]{fontenc}
 \usepackage[
   twoside,%
   letterpaper,includeheadfoot,%
@@ -47,7 +43,7 @@
   ]{geometry}
 
 %% Hyperlinking
-\usepackage[unicode, colorlinks=true, allcolors=blue]{hyperref}
+\usepackage[unicode, colorlinks=true, linkcolor=black, citecolor={blue!50!black}, urlcolor={blue!50!black}]{hyperref}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Henriques lab dependencies - End %%
@@ -259,7 +255,7 @@ $endif$
 
 \def\@maketitle{\newpage
   \begin{center}
-    \vskip0.2em{\Huge\bfseries\@title\par}\vskip1.0em%
+    \vskip0.2em{\LARGE\bfseries\@title\par}\vskip1.0em%
     {\lineskip.5em\large\@author\par}
 $if(equal-contribution)$
     {\Affilfont * These authors contributed equally\par}
@@ -429,7 +425,7 @@ $endif$
 % Caption style
 \usepackage{caption}
 \usepackage[rightcaption]{sidecap} % For sidecaptions
-\DeclareCaptionFormat{smallformat}{\normalfont\sffamily\fontsize{7}{9}\selectfont#1#2#3}
+\DeclareCaptionFormat{smallformat}{\normalfont\sffamily\fontsize{8}{10}\selectfont#1#2#3}
 \DeclareCaptionFormat{largeformat}{\normalfont\sffamily\fontsize{9}{12}\selectfont#1#2#3}
 \captionsetup{labelformat=empty,labelsep=none,format=smallformat}
 
@@ -437,13 +433,23 @@ $endif$
 %% Font
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{fontspec}
-\setmainfont{texgyrepagella}[
+\usepackage{unicode-math}
+\setmainfont{texgyretermes}[
   Extension = .otf,
   UprightFont = *-regular,
   BoldFont = *-bold,
   ItalicFont = *-italic,
   BoldItalicFont = *-bolditalic,
 ]
+\setsansfont{texgyreheros}[
+  Extension = .otf,
+  UprightFont = *-regular,
+  BoldFont = *-bold,
+  ItalicFont = *-italic,
+  BoldItalicFont = *-bolditalic,
+]
+\setmathfont{texgyretermes-math.otf}
+\usepackage{microtype}
 
 % Lead author surname for the running footer, derived from the first author
 \leadauthor{$lead-author$}
@@ -501,9 +507,11 @@ $for(keywords)$$keywords$$sep$ | $endfor$
 \end{keywords}
 $endif$
 
+$if(corresponding-email)$
 \begin{corrauthor}
-zhangkai33\at westlake.edu.cn
+$corresponding-email$
 \end{corrauthor}
+$endif$
 
 \parindent=1.5em
 

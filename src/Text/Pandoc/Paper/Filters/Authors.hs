@@ -50,6 +50,7 @@ addAuthors format (Pandoc meta blocks) = Pandoc meta' blocks
         "latex" -> setMeta "author" authors $
             setMeta "affiliation" affs $
             setMeta "lead-author" (leadAuthor authors) $
+            setMeta "corresponding-email" (correspondingEmail authors) $
             setEqualContribution meta
         _ -> setMeta "author" authorBlock meta
     (authors, affs) = addMarks $ readAuthors meta
@@ -85,6 +86,10 @@ addAuthors format (Pandoc meta blocks) = Pandoc meta' blocks
 leadAuthor :: [Author] -> T.Text
 leadAuthor []    = ""
 leadAuthor (a:_) = last (T.words (name a))
+
+-- | Comma-separated emails of corresponding authors.
+correspondingEmail :: [Author] -> T.Text
+correspondingEmail as = T.intercalate ", " (map (fromMaybe "") (map email (filter corresponding as)))
 
 addMarks :: [Author] -> ([Author], [Affiliation])
 addMarks authors = (map addMark authors, map f $ sortBy (comparing snd) $ M.toList aff)  where
