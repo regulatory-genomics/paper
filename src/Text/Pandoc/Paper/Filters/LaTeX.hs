@@ -23,35 +23,36 @@ filterLaTeX doc@(Pandoc meta _) = do
             Just (MetaBool b) -> b
             _ -> False
     if draft
-        then walkM placeFigure doc
-        else walkM (placeFigure . tableToLaTeX) doc
+        then walkM (placeFigure True) doc
+        else walkM (placeFigure False . tableToLaTeX) doc
 
 -- | This function traverses the AST and replaces all images
-placeFigure :: Block -> PandocIO Block
-placeFigure (Figure (ident, _, _) (Caption _ caption) fig) = do
+placeFigure :: Bool -> Block -> PandocIO Block
+placeFigure draft (Figure (ident, _, _) (Caption _ caption) fig) = do
     let classes = query getClasses fig
     caption' <- writeLaTeX def $ Pandoc (Meta M.empty) caption
     fig' <- writeLaTeX def $ Pandoc (Meta M.empty) fig
+    let env = if draft then "figure" else "figure*"
     if "side-caption" `elem` classes
         then return $ RawBlock "tex" $ T.pack $ printf
-            ( "\\begin{SCfigure*}[1]\\begin{wide}"
+            ( "\\begin{SC%s}[1]\\begin{wide}"
             <> "%s"
             <> "\\caption{%s}"
             <> "\\label{%s}"
-            <> "\\end{wide}\\end{SCfigure*}"
-            ) (T.unpack fig') (T.unpack caption') ident
+            <> "\\end{wide}\\end{SC%s}"
+            ) env (T.unpack fig') (T.unpack caption') ident env
         else return $ RawBlock "tex" $ T.pack $ printf
-            ( "\\begin{figure*}"
+            ( "\\begin{%s}"
             <> "\\centering"
             <> "%s"
             <> "\\caption{%s}"
             <> "\\label{%s}"
-            <> "\\end{figure*}"
-            ) (T.unpack fig') (T.unpack caption') ident
+            <> "\\end{%s}"
+            ) env (T.unpack fig') (T.unpack caption') ident env
   where
     getClasses (Image (_, classes, _) _ _) = classes
     getClasses _ = []
-placeFigure x = return x
+placeFigure _ x = return x
 
 {-
 -- | This function traverses the AST and replaces all images

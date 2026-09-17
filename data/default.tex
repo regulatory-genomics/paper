@@ -370,6 +370,8 @@ $endif$
 \fancyfoot[RO]{\aFooter}}
 
 \def\sectionmark#1{\relax}
+% Disable running head: do not set \rightmark from subsection titles
+\def\subsectionmark#1{\relax}
 
 \makeatother
 
@@ -418,6 +420,10 @@ $endif$
 \usepackage{array, booktabs}
 \usepackage{fontawesome5}
 \usepackage{float}
+$if(draft)$
+% One-column draft: figures are top floats so text fills the page below them
+\floatplacement{figure}{t}
+$endif$
 
 
 % Caption style
@@ -449,6 +455,11 @@ $if(draft)$
 $endif$
 
 \parindent=0pt
+
+% Allow line breaks at hyphens and hyphenation inside \texttt
+\usepackage[htt]{hyphenat}
+% Safety net: extra stretch in the emergency pass avoids overfull lines
+\setlength{\emergencystretch}{1em}
 
 \begin{document}
 
