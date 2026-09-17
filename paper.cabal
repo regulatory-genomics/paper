@@ -1,7 +1,7 @@
 cabal-version: 3.0
 
 name:           paper
-version:        0.3.2
+version:        0.3.3
 description:    Please see the README on GitHub at <https://github.com/githubuser/paper#readme>
 homepage:       https://github.com/regulatory-genomics/paper#readme
 bug-reports:    https://github.com/regulatory-genomics/paper/issues
