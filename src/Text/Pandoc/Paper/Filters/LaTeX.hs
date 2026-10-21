@@ -33,48 +33,37 @@ placeFigure draft (Figure (ident, _, _) (Caption _ caption) fig) = do
     caption' <- writeLaTeX def $ Pandoc (Meta M.empty) caption
     fig' <- writeLaTeX def $ Pandoc (Meta M.empty) fig
     let (env, opt) = if draft then ("figure", "") else ("figure*", "[t]")
-    if "side-caption" `elem` classes
-        then return $ RawBlock "tex" $ T.pack $ printf
-            ( "\\begin{SC%s}[1]\\begin{wide}"
-            <> "%s"
-            <> "\\caption{%s}"
-            <> "\\label{%s}"
-            <> "\\end{wide}\\end{SC%s}"
-            ) env (T.unpack fig') (T.unpack caption') ident env
-        else return $ RawBlock "tex" $ T.pack $ printf
-            ( "\\begin{%s}%s"
-            <> "\\centering"
-            <> "%s"
-            <> "\\caption{%s}"
-            <> "\\label{%s}"
-            <> "\\end{%s}"
-            ) env opt (T.unpack fig') (T.unpack caption') ident env
+    return $ RawBlock "tex" $ T.pack $
+        if "legend-next-page" `elem` classes
+            then printf
+                ( "\\begin{%s}[p!]\\centering"
+                <> "%s"
+                <> "\\end{%s}"
+                <> "\\begin{%s}[t!]"
+                <> "\\caption{%s}"
+                <> "\\label{%s}"
+                <> "\\end{%s}"
+                ) env (T.unpack fig') env env (T.unpack caption') ident env
+            else if "side-caption" `elem` classes
+                then printf
+                    ( "\\begin{SC%s}[1]\\begin{wide}"
+                    <> "%s"
+                    <> "\\caption{%s}"
+                    <> "\\label{%s}"
+                    <> "\\end{wide}\\end{SC%s}"
+                    ) env (T.unpack fig') (T.unpack caption') ident env
+                else printf
+                    ( "\\begin{%s}%s"
+                    <> "\\centering"
+                    <> "%s"
+                    <> "\\caption{%s}"
+                    <> "\\label{%s}"
+                    <> "\\end{%s}"
+                    ) env opt (T.unpack fig') (T.unpack caption') ident env
   where
     getClasses (Image (_, classes, _) _ _) = classes
     getClasses _ = []
 placeFigure _ x = return x
-
-{-
--- | This function traverses the AST and replaces all images
-placeFigure :: Block -> PandocIO Block
-placeFigure (Figure (ident, _, _) (Caption _ caption) fig) = do
-    caption' <- writeLaTeX def $ Pandoc (Meta M.empty) caption
-    fig' <- writeLaTeX def $ Pandoc (Meta M.empty) fig
-    return $ RawBlock "tex" $ T.pack $ printf
-        ( "\\begin{figure*}[b!]"
-        <> "\\centering"
-        <> "%s"
-        <> "\\caption{Continued on the following page}"
-        <> "\\label{%s}"
-        <> "\\end{figure*}"
-        <> "\\addtocounter{figure}{-1}"
-        <> "\\begin{figure*}[t!]"
-        <> "\\caption{%s}"
-        <> "\\end{figure*}"
-        ) (T.unpack fig') ident (T.unpack caption')
-placeFigure x = return x
--}
--}
 
 tableToLaTeX :: Block -> Block
 tableToLaTeX (Table _ (Caption _ caption) _ (TableHead _ thead) tbodies (TableFoot _ tfoot)) =

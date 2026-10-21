@@ -217,6 +217,11 @@ Subfigure-style captions can label several panels:
 **a,** First panel.
 **b,** Second panel.](figures/Gull.jpg){#fig:panels}
 
+An image with the `legend-next-page` class is placed alone on one page with its
+legend on the next (LaTeX and PDF only):
+
+![A legend that follows on the next page](figures/Gull.jpg){#fig:legend-next .legend-next-page}
+
 Extended Data figures use the `ext_fig:` label prefix:
 
 ![An Extended Data figure](figures/Gull.jpg){#ext_fig:example}

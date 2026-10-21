@@ -234,6 +234,20 @@ When `--no-embed-fig` is not supplied, image paths are converted to absolute
 paths before writing. With `--no-embed-fig`, figures are moved to generated
 `Figures` and `Supplementary Figures` sections at the end of the document.
 
+### Legend on the Next Page
+
+When a figure is too large to share a page with its caption, add the
+`legend-next-page` class to the image:
+
+```markdown
+![A long figure legend](figures/overview.png){#fig:overview .legend-next-page}
+```
+
+In LaTeX and PDF output the image is placed alone on a float page and the
+caption appears at the top of the following page. This class is specific to the
+LaTeX writer; HTML and DOCX outputs render the figure and caption together as
+usual.
+
 ### Supplementary Figures
 
 Put supplementary figures in a Markdown file listed under `supplement` in
