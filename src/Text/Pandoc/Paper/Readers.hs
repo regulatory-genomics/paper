@@ -10,6 +10,7 @@ import Text.Pandoc.Readers.Markdown
 import Text.Pandoc.Shared (stringify)
 import Data.Default
 import Text.Pandoc.PDF
+import Text.Pandoc.Paper.Filters.Unicode (normalizeSuperSub)
 import Text.Pandoc.Writers.ConTeXt
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -41,7 +42,7 @@ readYaml file = do
             setMeta "chaptersDepth" (MetaInlines [Str "1"]) $
             setMeta "chapDelim" (MetaInlines []) $
             meta <> metadata
-    return $ Pandoc meta' doc
+    return $ normalizeSuperSub $ Pandoc meta' doc
 
 readDoc :: FilePath -> PandocIO Pandoc
 readDoc txtMain = liftIO (T.readFile txtMain) >>=

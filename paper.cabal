@@ -43,6 +43,7 @@ library
       Text.Pandoc.Paper.Filters.CrossRef.Block
       Text.Pandoc.Paper.Filters.CrossRef.Reference
       Text.Pandoc.Paper.Filters.Citations
+      Text.Pandoc.Paper.Filters.Unicode
       Text.Pandoc.Paper.Templates
       Text.Pandoc.Paper.CSL
       Text.Pandoc.Paper.Internal
