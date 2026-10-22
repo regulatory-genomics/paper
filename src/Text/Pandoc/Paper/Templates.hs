@@ -3,6 +3,7 @@ module Text.Pandoc.Paper.Templates
     ( loadTemplate
     , defaultLaTeXTemplate
     , defaultHtmlTemplate
+    , defaultOpenXMLTemplate
     ) where
 
 import Text.Pandoc
@@ -11,7 +12,7 @@ import qualified Data.Text as T
 import qualified Data.ByteString.Char8 as B
 import Control.Monad.IO.Class (liftIO)
 
-import Text.Pandoc.Paper.Internal (latexTemplateFile, htmlTemplateFile)
+import Text.Pandoc.Paper.Internal (latexTemplateFile, htmlTemplateFile, openXMLTemplateFile)
 
 loadTemplate :: FilePath -> PandocIO (Template T.Text)
 loadTemplate fl = do
@@ -29,5 +30,11 @@ defaultLaTeXTemplate =
 defaultHtmlTemplate :: PandocIO (Template T.Text)
 defaultHtmlTemplate =
     runWithPartials (compileTemplate "" $ T.pack $ B.unpack htmlTemplateFile) >>= \case
+        Left err -> error err
+        Right x -> return x
+
+defaultOpenXMLTemplate :: PandocIO (Template T.Text)
+defaultOpenXMLTemplate =
+    runWithPartials (compileTemplate "" $ T.pack $ B.unpack openXMLTemplateFile) >>= \case
         Left err -> error err
         Right x -> return x

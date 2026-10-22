@@ -3,7 +3,7 @@
 This file demonstrates the Pandoc Markdown features enabled by Paper. The
 examples are intentionally small so they can be copied into manuscript files.
 
-## Text Formatting {#syntax-text}
+## Text Formatting {#sec:syntax-text}
 
 Text can be *emphasized*, **made strong**, or ~~struck out~~. Chemical and
 mathematical notation can use subscript H~2~O and superscript x^2^.
@@ -249,6 +249,12 @@ citations can be written together: [@doi:10.1038/s41592-023-02139-9;
 The DOI citations in this example are the same form used in ordinary
 manuscript text. Paper downloads missing entries to `bibliography.bib` and
 processes citations with the bundled CSL style.
+
+Short aliases can be defined in `metadata.yaml` under `citation-key` and cited
+with the `cite:` prefix, for example `[@cite:id1]`. An alias is replaced by its
+mapped identifier, so the citation behaves exactly like citing the DOI
+directly. Prefixes, suffixes, and the suppress-author form work as usual:
+[see @cite:id1, page 1] and [-@cite:id1].
 
 ## Metadata Block
 

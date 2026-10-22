@@ -12,6 +12,9 @@ latexTemplateFile = $(embedFile "data/default.tex")
 docxTemplateFile :: B.ByteString
 docxTemplateFile = $(embedFile "data/default.dotx")
 
+openXMLTemplateFile :: B.ByteString
+openXMLTemplateFile = $(embedFile "data/default.openxml")
+
 htmlTemplateFile :: B.ByteString
 htmlTemplateFile = $(embedFile "data/default.html")
 

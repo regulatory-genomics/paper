@@ -18,6 +18,7 @@ data Author = Author {
     affiliations :: [T.Text],
     equal_contribution :: Bool,
     corresponding :: Bool,
+    lead_contact :: Bool,
     marks :: [T.Text]
 } deriving (Show)
 
@@ -28,6 +29,7 @@ instance ToMetaValue Author where
         ("affiliations", MetaList $ map MetaString $ affiliations author),
         ("equal_contribution", MetaBool $ equal_contribution author),
         ("corresponding", MetaBool $ corresponding author),
+        ("lead_contact", MetaBool $ lead_contact author),
         ("marks", MetaList $ map MetaString $ marks author)
         ]
 
@@ -51,19 +53,38 @@ addAuthors format (Pandoc meta blocks) = Pandoc meta' blocks
             setMeta "affiliation" affs $
             setMeta "lead-author" (leadAuthor authors) $
             setMeta "corresponding-email" (correspondingEmail authors) $
-            setEqualContribution meta
+            setMeta "lead-contact" (leadContactLine hasLead leadNo) $
+            setMeta "equal-contribution-note" (equalContributionNote equalMark) $
+            meta
+        "docx" -> setMeta "author" [authors'] $
+            setMeta "author-notes" authorNotes meta
         _ -> setMeta "author" authorBlock meta
-    (authors, affs) = addMarks $ readAuthors meta
+    (authors, affs, equalMark, leadNo) = addMarks $ readAuthors meta
+    hasLead = any lead_contact authors
+    authors' = para $ combineAuthors $ map formatAuthor authors
+    affilsInlines = mconcat (intersperse linebreak (map formatAffliation affs))
+        <> maybe mempty (\m -> linebreak <> superscript (text m)
+                            <> text "These authors contributed equally") equalMark
+    leadNote | hasLead = Just $ superscript (text $ T.pack (show leadNo)) <> text "Lead contact"
+             | otherwise = Nothing
+    corresNote = Just $ text $
+        "✉ Correspondence: " <> T.intercalate ", " corresponding_authors
+    corresponding_authors = map (\x -> name x <> " (" <> fromJust (email x) <> ")") $
+        filter corresponding authors
+    -- DOCX: the institute block is rendered by the bundled OpenXML template
+    -- below the author names. The Div style is left-aligned in the bundled
+    -- reference document; pandoc creates a fallback style for other documents.
+    authorNotes = map (divWith ("", [], [("custom-style", "Author Note")]) . para) instituteNotes
+    -- HTML: the whole institute block is wrapped in one Div so the template
+    -- style sheet can align it as a unit.
     authorBlock =
-        let authors' = para $ combineAuthors $ map formatAuthor authors
-            affs' = para $ mconcat (intersperse linebreak (map formatAffliation affs))
-                <> if any equal_contribution authors
-                    then linebreak <> text "* These authors contributed equally"
-                    else mempty
-            corresponding_authors = map (\x -> name x <> " (" <> fromJust (email x) <> ")") $
-                filter corresponding authors
-            corres = para $ text $ "✉ Correspondence: " <> T.intercalate ", " corresponding_authors
-        in [authors', affs', corres]
+        [ authors'
+        , divWith ("", ["affiliations"], []) $ mconcat $ map para instituteNotes
+        ]
+    instituteNotes = affilsNote ++ catMaybes [leadNote, corresNote]
+      where
+        affilsNote | null affs && isNothing equalMark = []
+                   | otherwise = [affilsInlines]
 
     formatAuthor :: Author -> Inlines
     formatAuthor author = 
@@ -77,10 +98,21 @@ addAuthors format (Pandoc meta blocks) = Pandoc meta' blocks
         spacer | length authors == 2 = text " and "
                | otherwise = text ", "
 
-    setEqualContribution metadata
-        | any equal_contribution authors = setMeta "equal-contribution"
-            (MetaBool True) metadata
-        | otherwise = metadata
+-- | Note for the lead contact: superscript mark followed by the label.
+leadContactLine :: Bool -> Int -> MetaValue
+leadContactLine False _ = MetaInlines []
+leadContactLine True n  = MetaInlines
+    [ Superscript [Str (T.pack (show n))]
+    , Str "Lead contact"
+    ]
+
+-- | Note for equal contribution: superscript mark followed by the label.
+equalContributionNote :: Maybe T.Text -> MetaValue
+equalContributionNote Nothing  = MetaInlines []
+equalContributionNote (Just m) = MetaInlines
+    [ Superscript [Str m]
+    , Str "These authors contributed equally"
+    ]
 
 -- | Lead author surname: last word of the first author's name.
 leadAuthor :: [Author] -> T.Text
@@ -91,20 +123,39 @@ leadAuthor (a:_) = last (T.words (name a))
 correspondingEmail :: [Author] -> T.Text
 correspondingEmail as = T.intercalate ", " (map (fromMaybe "") (map email (filter corresponding as)))
 
-addMarks :: [Author] -> ([Author], [Affiliation])
-addMarks authors = (map addMark authors, map f $ sortBy (comparing snd) $ M.toList aff)  where
+-- | Assign author marks. Affiliation marks are numbered in author order,
+-- followed by the shared equal-contribution mark and the lead-contact mark.
+-- Returns the marked authors, the affiliation list, the shared
+-- equal-contribution mark ('Nothing' when no author is an equal contributor),
+-- and the lead-contact mark number.
+addMarks :: [Author] -> ([Author], [Affiliation], Maybe T.Text, Int)
+addMarks authors = (map addMark authors, map f $ sortBy (comparing snd) $ M.toList aff, equalMark, leadNo)  where
     addMark author = author
         { marks = map (T.pack . show) (sort $ map (\x -> M.findWithDefault undefined x aff) $ affiliations author)
-            <> (if equal_contribution author then ["*"] else [])
+            <> (if equal_contribution author then maybeToList equalMark else [])
+            <> (if lead_contact author then [leadMark] else [])
         }
     aff = M.fromList $ zip (nub $ concatMap affiliations authors) [1..]
+    nAffs = M.size aff
+    hasEqual = any equal_contribution authors
+    equalMark = if hasEqual then Just (T.pack $ show $ nAffs + 1) else Nothing
+    leadNo = nAffs + (if hasEqual then 2 else 1)
+    leadMark = T.pack $ show leadNo
     f (name, k) = Affiliation { aff_mark = T.pack $ show k, aff_name = name }
 
 -- | Read author metadata from Pandoc and return a list of authors.
 readAuthors :: Meta -> [Author]
 readAuthors meta = case lookupMeta "author" meta of
-    Just (MetaList authors) -> map readAuthor authors
+    Just (MetaList authors) -> checkLeadContact $ map readAuthor authors
     _                       -> []
+
+-- | There can be at most one lead-contact author.
+checkLeadContact :: [Author] -> [Author]
+checkLeadContact authors
+    | count > 1 = error $ "At most one author can be marked as lead-contact, found " <> show count
+    | otherwise = authors
+  where
+    count = length (filter lead_contact authors)
 
 readAuthor :: MetaValue -> Author
 readAuthor (MetaMap m) = Author {
@@ -113,6 +164,7 @@ readAuthor (MetaMap m) = Author {
         affiliations = let MetaList x = M.findWithDefault (MetaList []) "affiliations" m in map stringify x,
         equal_contribution = maybe False isTrue $ M.lookup "equal_contribution" m,
         corresponding = maybe False isTrue $ M.lookup "corresponding" m,
+        lead_contact = maybe False isTrue $ M.lookup "lead-contact" m,
         marks = let MetaList x = M.findWithDefault (MetaList []) "marks" m in map stringify x
     }
   where

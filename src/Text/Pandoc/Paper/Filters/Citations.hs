@@ -20,10 +20,12 @@ import Control.Monad.IO.Class
 import qualified Text.BibTeX.Parse as P
 import qualified Text.BibTeX.Format as F
 import Data.ByteString.Encoding (decode)
+import Data.Functor.Identity (runIdentity)
 import Text.Parsec (parse)
 import Text.Pandoc
 import Text.Pandoc.Walk (walkM)
 import Text.Pandoc.Builder
+import Text.Pandoc.Shared (stringify)
 import Text.Pandoc.Citeproc (processCitations)
 import Control.Monad.State.Lazy (modify, execState)
 import Text.Printf (printf)
@@ -60,13 +62,39 @@ citeproc refFl cslData (Pandoc meta main) = do
     let supplement = case lookupMeta "supplement" meta of
             Just (MetaBlocks blk) -> blk
             _ -> []
-    (main', refs) <- processBlocks refFl cslData main
-    (supplement', supp_refs) <- processBlocks refFl cslData supplement
+        citeKeys = getCiteKeyMap meta
+    (main', refs) <- processBlocks refFl cslData $ resolveCiteKeys citeKeys main
+    (supplement', supp_refs) <- processBlocks refFl cslData $ resolveCiteKeys citeKeys supplement
 
     let meta' = setMeta "refs" (MetaBlocks refs) $
             setMeta "supp_refs" (MetaBlocks supp_refs) $
             setMeta "supplement" (MetaBlocks supplement') $ meta
     return $ Pandoc meta' main'
+
+-- | Read the @citation-key@ metadata field: a map from citation keys to
+-- bibliography identifiers, e.g. @{id1: "doi:10.1038/xxx"}@. Citations written
+-- as @[@cite:id1]@ are pure aliases and are replaced by the mapped identifier
+-- before any downstream processing.
+getCiteKeyMap :: Meta -> M.Map T.Text T.Text
+getCiteKeyMap meta = case lookupMeta "citation-key" meta of
+    Just (MetaMap m) -> M.fromList [(k, stringify v) | (k, v) <- M.toList m]
+    _ -> M.empty
+
+-- | Replace citation keys of the form @cite:key@ with their mapped
+-- identifiers. A key without an entry in the map is a build error.
+resolveCiteKeys :: M.Map T.Text T.Text -> [Block] -> [Block]
+resolveCiteKeys citeKeys = runIdentity . walkM f
+  where
+    f (Cite cs il) = do
+        cs' <- mapM g cs
+        return $ Cite cs' il
+    f x = return x
+    g c
+        | Just key <- T.stripPrefix "cite:" (citationId c) =
+            case M.lookup key citeKeys of
+                Just refId -> return c{citationId = refId}
+                Nothing -> error $ "Unknown citation key: @" <> T.unpack (citationId c)
+        | otherwise = return c
 
 processBlocks :: Maybe FilePath -- ^ Path to the bibliography file.
               -> Maybe B.ByteString

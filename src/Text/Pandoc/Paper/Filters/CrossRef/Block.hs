@@ -14,11 +14,15 @@ import Lens.Micro.Mtl
 import Text.Pandoc.Definition
 import qualified Data.Sequence as S
 import Data.Sequence (ViewR(..))
-import Text.Pandoc.Shared (blocksToInlines)
+import Text.Pandoc.Shared (blocksToInlines, stringify)
 
 import Text.Pandoc.Paper.Filters.CrossRef.Types
 
 replaceBlock :: Block -> WS Block
+replaceBlock blk@(Header _ (label, _, _) inlines)
+    | "sec:" `T.isPrefixOf` label = do
+        registerSection label (T.strip $ stringify inlines)
+        return blk
 replaceBlock blk = do
     opts <- ask :: WS Options
     let prefixes = flip mapMaybe (refTypes opts) $ \case
@@ -124,3 +128,12 @@ getRefLabel tag ils
     , ("{#"<>tag<>":") `T.isPrefixOf` attr
     = T.init `fmap` T.stripPrefix "{#" attr
 getRefLabel _ _ = Nothing
+
+-- | Register a @sec:@-labelled heading in the section reference map. Section
+-- references render the heading text, so the index stores the heading name.
+registerSection :: T.Text -> T.Text -> WS ()
+registerSection label name = do
+    prop' <- use (refsAt RefSection)
+    when (M.member label prop') $
+        error . T.unpack $ "Duplicate label: " <> label
+    refsAt RefSection %= M.insert label (S.singleton (1, Just name))

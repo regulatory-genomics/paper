@@ -1,4 +1,4 @@
-# Methods
+# Methods {#sec:methods}
 
 ## Lorem ipsum dolor sit amet
 

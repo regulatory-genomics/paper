@@ -256,11 +256,23 @@ $endif$
 \def\@maketitle{\newpage
   \begin{center}
     \vskip0.2em{\LARGE\bfseries\@title\par}\vskip1.0em%
-    {\lineskip.5em\large\@author\par}
-$if(equal-contribution)$
-    {\Affilfont * These authors contributed equally\par}
-$endif$
-  \end{center}\par\vskip 1.4em}
+    {\lineskip.5em\large\AB@authlist\par}
+  \end{center}\par\vskip 0.8em
+  {\raggedright
+  $for(affiliation)$
+  {\Affilfont\textsuperscript{$affiliation.mark$}$affiliation.name$\par}
+  $endfor$
+  $if(equal-contribution-note)$
+  {\Affilfont$equal-contribution-note$\par}
+  $endif$
+  $if(lead-contact)$
+  {\Affilfont$lead-contact$\par}
+  $endif$
+  $if(corresponding-email)$
+  {\Affilfont\faEnvelope\ Correspondence: $corresponding-email$\par}
+  $endif$
+  \par}
+\par\vskip 1.1em}
 
 %% Abstract and keywords
 \def\abstract{%\vspace{-.3em}
@@ -273,9 +285,6 @@ $endif$
 \def\endkeywords{\vspace{0.3em}\par\normalsize}
 
 \newcommand{\at}{\makeatletter @\makeatother}
-\def\corrauthor{%\vspace{-.3em}
-\noindent\ifbfabstract\Affilfont\bfseries\else\footnotesize\fi  \faEnvelope\ Correspondence:\itshape}
-\def\endcorrauthor{\vspace{0.3em}\par\normalsize}
 
 \def\acknowledgements{\vspace{1em}
 \Affilfont\bfseries ACKNOWLEDGEMENTS\par\mdseries}
@@ -481,12 +490,6 @@ $for(author)$
 \author[$for(author.marks)$$author.marks$$sep$,$endfor$$if(author.corresponding)$,\faEnvelope$endif$]{$author.name$}
 $endfor$
 
-$if(affiliation)$
-$for(affiliation)$
-\affil[$affiliation.mark$]{$affiliation.name$}
-$endfor$
-$endif$
-
 $endif$
 
 \maketitle
@@ -505,12 +508,6 @@ $if(keywords)$
 \begin{keywords}
 $for(keywords)$$keywords$$sep$ | $endfor$
 \end{keywords}
-$endif$
-
-$if(corresponding-email)$
-\begin{corrauthor}
-$corresponding-email$
-\end{corrauthor}
 $endif$
 
 \parindent=1.5em

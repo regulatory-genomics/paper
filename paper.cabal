@@ -18,6 +18,7 @@ data-files:
     data/*.tex
     data/*.dotx
     data/*.html
+    data/*.openxml
     data/*.csl
     data/template/*.md
     data/template/*.yaml

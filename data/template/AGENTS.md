@@ -126,6 +126,7 @@ author:
     affiliations:
       - Department of Biology, Example University
     corresponding: true
+    lead-contact: true
     equal_contribution: false
     marks:
       - 1
@@ -139,11 +140,18 @@ Supported author fields:
 | `email` | string | Email address used for correspondence output. |
 | `affiliations` | list of strings | Affiliations associated with the author. |
 | `corresponding` | boolean | Marks the author as corresponding author. |
-| `equal_contribution` | boolean | Adds a `*` author mark after affiliation marks and the note `* These authors contributed equally` after the affiliation list. |
+| `lead-contact` | boolean | Marks the single lead-contact author. Adds a numeric superscript mark (the next number after the affiliation marks) and a `ⁿLead contact` note before the Correspondence line. At most one author may set this; the build fails otherwise. |
+| `equal_contribution` | boolean | Adds a shared numeric author mark (the number after the affiliation marks) and the note `ⁿThese authors contributed equally` after the affiliation list. |
 | `marks` | list of strings | Additional author marks. |
 
 Paper deduplicates affiliations and assigns numeric superscript marks in the
-order in which unique affiliations first occur. For LaTeX, authors and
+order in which unique affiliations first occur. Numeric marks are allocated
+contiguously in this order: affiliation numbers, the shared equal-contribution
+mark, and the lead-contact mark. Author marks are rendered in
+this order: affiliation numbers, the equal-contribution number, the
+`lead-contact`
+number, and finally the corresponding-author envelope (✉), which is always the
+last mark. For LaTeX, authors and
 affiliations are supplied as separate Pandoc metadata fields. For HTML and
 DOCX, Paper inserts formatted author, affiliation, and correspondence blocks
 into the document.
@@ -316,7 +324,7 @@ Cross-reference labels use a type prefix followed by a colon and an identifier:
 | --- | --- | --- |
 | `fig:` | Figure | `Fig.` or `figure` |
 | `tbl:` | Table | `Table` or `table` |
-| `sec:` | Section | `Section` or `section` |
+| `sec:` | Section | The section title |
 | `supp_fig:` | Supplementary figure | `Supplementary Fig.` |
 | `ext_fig:` | Extended Data figure | `Extended Data Fig.` |
 | custom prefix | Custom reference type | The prefix text |
@@ -327,7 +335,8 @@ Reference a labeled object with a Pandoc citation:
 See [@fig:overview] and [@tbl:summary].
 ```
 
-Section references require an explicit section identifier:
+Section references require a heading with an explicit `sec:`-prefixed
+identifier and render the section title as the reference text:
 
 ```markdown
 # Methods {#sec:methods}
@@ -384,6 +393,29 @@ requested. Use `--bib-cache FILE` to select another cache file.
 Use `--disable-cache` to disable the cache. In that mode Paper fetches the
 required DOI references for the current build instead of reading or updating a
 cache file.
+
+### Citation Keys
+
+Short aliases for bibliography identifiers can be defined in `metadata.yaml`
+with the `citation-key` field:
+
+```yaml
+citation-key:
+  id1: doi:10.1038/s41592-023-02139-9
+  id2: doi:10.1038/s41586-021-03819-2
+```
+
+Cite an alias with the `cite:` prefix:
+
+```markdown
+The method follows [@cite:id1] and builds on [@cite:id2].
+```
+
+`[@cite:key]` is replaced by the mapped identifier before citations are
+processed, so `citation-key` entries are pure aliases and are equivalent to
+citing the mapped value directly. Citation prefixes, suffixes, and the
+suppress-author form work as usual, for example `[-@cite:id1]` or
+`[see @cite:id1, p. 12]`. Undefined keys are a build error.
 
 The default citation style is the bundled Nature CSL style. Citation metadata
 such as `link-citations` can be supplied in `metadata.yaml` and is passed to

@@ -28,6 +28,7 @@ author:
     affiliations:
       - School of Life Sciences, Westlake University, Hangzhou, Zhejiang, China
     corresponding: true
+    lead-contact: true
 
 abstract: |
   The landscape of scientific writing has been rapidly evolving, with researchers seeking more efficient and user-friendly methods to create, collaborate on, and share their work.
@@ -53,3 +54,8 @@ supplement:
 link-citations: true
 watermark: DRAFT
 draft: true
+
+# Citation key aliases: cite mapped references with [@cite:key] in the text.
+citation-key:
+  id1: doi:10.1038/s41592-023-02139-9
+  id2: doi:10.1038/s41586-020-2649-2

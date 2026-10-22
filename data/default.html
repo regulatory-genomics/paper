@@ -19,6 +19,9 @@ $endif$
   <title>$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$</title>
   <style>
     $styles.html()$
+    header .affiliations {
+      text-align: left;
+    }
   </style>
 $for(css)$
   <link rel="stylesheet" href="$css$" />
@@ -44,7 +47,7 @@ $if(subtitle)$
 <p class="subtitle">$subtitle$</p>
 $endif$
 $for(author)$
-<p class="author">$author$</p>
+$author$
 $endfor$
 $if(date)$
 <p class="date">$date$</p>

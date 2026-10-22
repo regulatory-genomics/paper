@@ -13,6 +13,7 @@ import System.IO.Temp (withSystemTempFile)
 import System.IO
 
 import Text.Pandoc.Paper.Internal (docxTemplateFile)
+import Text.Pandoc.Paper.Templates (defaultOpenXMLTemplate)
 
 writeDocx' :: WriterOptions -> Pandoc -> PandocIO BL.ByteString
 writeDocx' opts (Pandoc meta doc) = withSystemTempFile "tmp.dotx" $ \fl h -> do
@@ -21,7 +22,8 @@ writeDocx' opts (Pandoc meta doc) = withSystemTempFile "tmp.dotx" $ \fl h -> do
         Nothing -> do
             liftIO $ B.hPutStr h docxTemplateFile >> hClose h
             return $ opts{writerReferenceDoc=Just fl}
-    writeDocx opts' $ Pandoc meta $ doc ++ refs ++ supplement ++ supp_refs
+    tpl <- defaultOpenXMLTemplate
+    writeDocx opts'{writerTemplate=Just tpl} $ Pandoc meta $ doc ++ refs ++ supplement ++ supp_refs
   where
     refs = case lookupMeta "refs" meta of
         Just (MetaBlocks blk) -> blk
