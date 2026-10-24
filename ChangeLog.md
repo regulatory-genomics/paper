@@ -2,6 +2,13 @@
 
 ## Unreleased changes
 
+- Render bare URLs in Markdown as hyperlinks: the LaTeX reader now enables
+  `autolink_bare_uris`, so URLs written as plain text (including those wrapped
+  in parentheses) become clickable `\url{}` links that break at any character
+  in PDF output.
+- Left-align the title and author list in the title block of PDF, HTML, and
+  DOCX output; affiliations, equal-contribution, lead-contact, and
+  correspondence notes were already left-aligned.
 - Register `sec:`-labelled headings in the cross-reference filter. Section
   references such as `[@sec:methods]` now resolve to the referenced section's
   title, hyperlinked to the heading, instead of rendering an undefined
@@ -11,7 +18,7 @@
   next number after the affiliation marks) and a `ⁿLead contact` note is
   rendered in the institute block — affiliations, equal-contribution note,
   lead contact, and correspondence, left-aligned as one block directly below
-  the centered author names — in PDF, HTML, and DOCX output. The
+  the author names — in PDF, HTML, and DOCX output. The
   corresponding-author envelope mark (✉) is always the last author mark.
 - Change the equal-contribution author mark from `*` to a shared number
   allocated after the affiliation marks; the note now reads

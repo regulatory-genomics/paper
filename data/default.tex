@@ -44,6 +44,8 @@
 
 %% Hyperlinking
 \usepackage[unicode, colorlinks=true, linkcolor=black, citecolor={blue!50!black}, urlcolor={blue!50!black}]{hyperref}
+% Allow long URLs to break at any character, not just after slashes/hyphens
+\usepackage{xurl}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Henriques lab dependencies - End %%
@@ -255,10 +257,10 @@ $endif$
 }
 
 \def\@maketitle{\newpage
-  \begin{center}
+  {\raggedright
     \vskip0.2em{\LARGE\bfseries\@title\par}\vskip1.0em%
-    {\lineskip.5em\large\AB@authlist\par}
-  \end{center}\par\vskip 0.8em
+    {\lineskip.5em\large\AB@authlist\par}\par}%
+  \vskip 0.8em
   {\raggedright
   $for(affiliation)$
   {\Affilfont\textsuperscript{$affiliation.mark$}$affiliation.name$\par}

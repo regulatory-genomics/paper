@@ -80,6 +80,7 @@ readDoc txtMain = liftIO (T.readFile txtMain) >>=
         , Ext_definition_lists
         , Ext_example_lists
         , Ext_all_symbols_escapable
+        , Ext_autolink_bare_uris
         , Ext_intraword_underscores
         , Ext_blank_before_blockquote
         , Ext_blank_before_header
