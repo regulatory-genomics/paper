@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Text.Pandoc.Paper.Readers (readYaml, readDoc) where
+module Text.Pandoc.Paper.Readers (readYaml, readYamlWithSources, readDoc, readDocText) where
 
 import Control.Monad
 import Data.Yaml (Value(..), toJSON)
@@ -25,28 +25,43 @@ import Text.Pandoc.Builder
 -- | Read a document from a Yaml file.
 readYaml :: FilePath -> PandocIO Pandoc
 readYaml file = do
+    (doc, _, _) <- readYamlWithSources file
+    return doc
+
+-- | The native project reader and the ordered relative paths it resolved.
+readYamlWithSources :: FilePath -> PandocIO (Pandoc, [FilePath], [FilePath])
+readYamlWithSources file = do
     let dir = takeDirectory file
+        readSections files = fmap mconcat $ forM files $ \filename ->
+            readDoc $ dir <> "/" <> filename
+        filenames = map (T.unpack . stringify)
     metadata <- liftIO (B.readFile file) >>= yamlToMeta def{ readerExtensions = pandocExtensions } Nothing
-    Pandoc meta doc <- case lookupMeta "contents" metadata of
-        Just (MetaList contents) -> fmap mconcat $ forM contents $ \filename ->
-            readDoc $ dir <> "/" <> T.unpack (stringify filename)
+    sources <- case lookupMeta "contents" metadata of
+        Just (MetaList contents) -> return $ filenames contents
         Nothing -> error "No 'contents' key found in YAML file."
         _ -> error "The 'contents' key must be a list of strings."
-    Pandoc _ supplement <- case lookupMeta "supplement" metadata of
-        Just (MetaList contents) -> fmap mconcat $ forM contents $ \filename ->
-            readDoc $ dir <> "/" <> T.unpack (stringify filename)
-        Nothing -> return mempty
+    supplements <- case lookupMeta "supplement" metadata of
+        Just (MetaList contents) -> return $ filenames contents
+        Nothing -> return []
+        _ -> error "The 'supplement' key must be a list of strings."
+    Pandoc meta doc <- readSections sources
+    Pandoc _ supplement <- readSections supplements
 
     let meta' = setMeta "supplement" (MetaBlocks supplement) $
             setMeta "chapters" (MetaBool True) $
             setMeta "chaptersDepth" (MetaInlines [Str "1"]) $
             setMeta "chapDelim" (MetaInlines []) $
             meta <> metadata
-    return $ normalizeSuperSub $ Pandoc meta' doc
+    return (normalizeSuperSub $ Pandoc meta' doc, sources, supplements)
 
 readDoc :: FilePath -> PandocIO Pandoc
-readDoc txtMain = liftIO (T.readFile txtMain) >>=
-    readMarkdown def{ readerExtensions = extensions }
+readDoc txtMain = liftIO (T.readFile txtMain) >>= readDocText
+
+-- | The project's Markdown dialect applied to text already in memory. The
+-- editor uses the same reader options as a real build, so a validated edit
+-- means what it says.
+readDocText :: T.Text -> PandocIO Pandoc
+readDocText body = readMarkdown def{ readerExtensions = extensions } body
   where
     extensions = extensionsFromList
         [ Ext_footnotes

@@ -4,6 +4,11 @@
 module Main where
 
 import Control.Monad (when, forM_)
+import Data.Aeson (Value (..), object, (.=))
+import qualified Data.Aeson.Key as Key
+import qualified Data.Aeson.KeyMap as KM
+import System.Exit (ExitCode (ExitFailure), exitWith)
+import Data.Char (isControl)
 import Text.Pandoc
 import Text.Pandoc.SelfContained (makeSelfContained)
 import qualified Data.Text.IO as T
@@ -11,7 +16,7 @@ import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8 as B
 import Shelly (shelly, bash_, liftIO, mkdir_p, test_d)
-import System.FilePath.Posix (takeDirectory)
+import System.FilePath.Posix (takeDirectory, (</>))
 import System.Directory (setCurrentDirectory, makeAbsolute)
 import           Data.Version                      (showVersion)
 import           Options.Applicative
@@ -21,13 +26,14 @@ import Text.Pandoc.Shared (stringify)
 import Data.Aeson.Encode.Pretty (encodePretty)
 
 import Text.Pandoc.Paper.Writers (writeDocx', writeHtml)
-import Text.Pandoc.Paper.Readers (readYaml)
+import Text.Pandoc.Paper.Readers (readYaml, readYamlWithSources)
+import Text.Pandoc.Paper.Editor (inspectValue, planEditValue)
 import Text.Pandoc.Paper.Filters
 import Text.Pandoc.Paper.Templates
 import Text.Pandoc.Paper.CSL
 import Text.Pandoc.Paper.Internal (template)
 
-data Command = Init InitOpts | Build BuildOpts
+data Command = Init InitOpts | Build BuildOpts | Describe FilePath | Inspect FilePath | PlanEdit FilePath
     deriving (Show, Read)
 
 data InitOpts = InitOpts
@@ -41,6 +47,7 @@ data BuildOpts = BuildOpts
     , _docx_template :: Maybe FilePath
     , _bib_cache :: FilePath
     , _out_dir :: Maybe FilePath
+    , _output_stem :: Maybe FilePath
     , _output_raw :: Bool
     , _output_pdf :: Bool
     , _output_docx :: Bool
@@ -54,11 +61,26 @@ optsParser :: Parser Command
 optsParser = hsubparser
     ( command "init" (info (Init <$> initParser) (progDesc "Initialize a new project"))
    <> command "build" (info (Build <$> buildParser) (progDesc "Build a project"))
+   <> command "describe" (info describeParser (progDesc "Describe a project without building or changing it"))
+   <> command "inspect" (info inspectParser (progDesc "Report source-mapped editable blocks without changing the project"))
+   <> command "plan-edit" (info planEditParser (progDesc "Validate one block replacement from stdin without writing it"))
     )
 
 initParser:: Parser InitOpts
 initParser = InitOpts
     <$> strArgument (metavar "PROJECT_DIR")
+
+describeParser :: Parser Command
+describeParser = Describe <$> strArgument (metavar "PROJECT_DIR")
+    <* flag' () (long "json" <> help "Emit versioned JSON to stdout")
+
+inspectParser :: Parser Command
+inspectParser = Inspect <$> strArgument (metavar "PROJECT_DIR")
+    <* optional (flag' () (long "json" <> help "Emit versioned JSON to stdout"))
+
+planEditParser :: Parser Command
+planEditParser = PlanEdit <$> strArgument (metavar "PROJECT_DIR")
+    <* optional (flag' () (long "json" <> help "Emit versioned JSON to stdout"))
  
 buildParser:: Parser BuildOpts
 buildParser = BuildOpts
@@ -86,6 +108,8 @@ buildParser = BuildOpts
        <> short 'o'
        <> metavar "OUTPUT_DIR"
        <> help "output directory" )
+    <*> optional (option (eitherReader validateStem)
+        (long "output-stem" <> metavar "NAME" <> help "Override the output basename (no directory separators)"))
     <*> switch
         ( long "output-raw"
         <> help "output abstract syntax tree" )
@@ -118,6 +142,31 @@ initProject InitOpts{..} = do
         shelly $ mkdir_p $ _proj_dir <> "/" <> takeDirectory file
         B.writeFile (_proj_dir <> "/" <> file) content
 
+validateStem :: String -> Either String FilePath
+validateStem name
+    | null name || all (== ' ') name || name == "." || name == ".." || any invalid name
+        = Left "output stem must be a single nonempty filename stem"
+    | otherwise = Right name
+  where
+    invalid ch = isControl ch || ch `elem` ("/\\:" :: String)
+
+defaultOutputStem :: Meta -> FilePath
+defaultOutputStem meta = case lookupMeta "short-title" meta of
+    Just title -> T.unpack (stringify title)
+    _ -> "paper"
+
+describeProject :: FilePath -> IO ()
+describeProject project = do
+    (Pandoc meta _, sources, supplements) <- runIOorExplode $ readYamlWithSources (project </> "metadata.yaml")
+    BL.putStr $ encodePretty $ object
+        [ "version" .= (1 :: Int)
+        , "sources" .= sources
+        , "supplement" .= supplements
+        , "metadata" .= unMeta meta
+        , "outputStem" .= defaultOutputStem meta
+        ]
+    BL.putStr "\n"
+
 compileDocument :: BuildOpts -> IO ()
 compileDocument BuildOpts{..} = runIOorExplode $ do
     setVerbosity INFO
@@ -129,9 +178,7 @@ compileDocument BuildOpts{..} = runIOorExplode $ do
         citeproc (if _disable_cache then Nothing else Just _bib_cache) (Just cslNature) >>=
         absPath >>=
         (if _no_embed_fig then return . placeImagesAtEnd else return)
-    let filepath = case lookupMeta "short-title" meta of
-            Just title -> outDir <> "/" <> T.unpack (stringify title)
-            _ -> outDir <> "/paper"
+    let filepath = outDir <> "/" <> maybe (defaultOutputStem meta) id _output_stem
     
     when _output_raw $ liftIO $ BL.writeFile (filepath <> ".raw") $ encodePretty doc
 
@@ -166,6 +213,19 @@ compileDocument BuildOpts{..} = runIOorExplode $ do
 defaultMain :: Command -> IO ()
 defaultMain (Init opts) = initProject opts
 defaultMain (Build opts) = compileDocument opts
+defaultMain (Describe project) = describeProject project
+defaultMain (Inspect project) = inspectValue project >>= emitJson
+defaultMain (PlanEdit project) = BL.getContents >>= planEditValue project >>= emitJson
+
+-- | Print a JSON answer, and fail the process when the answer says `ok: false`
+-- so a shell caller cannot mistake a rejected edit for a written one.
+emitJson :: Value -> IO ()
+emitJson value = do
+    BL.putStr (encodePretty value)
+    BL.putStr "\n"
+    case value of
+        Object o | KM.lookup (Key.fromText "ok") o == Just (Bool False) -> exitWith (ExitFailure 1)
+        _ -> pure ()
 
 main :: IO ()
 main = execParser opts >>= defaultMain

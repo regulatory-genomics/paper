@@ -34,6 +34,7 @@ library
       Text.Pandoc.Paper
       Text.Pandoc.Paper.Writers
       Text.Pandoc.Paper.Readers
+      Text.Pandoc.Paper.Editor
       Text.Pandoc.Paper.Filters
       Text.Pandoc.Paper.Filters.Authors
       Text.Pandoc.Paper.Filters.LaTeX
@@ -96,6 +97,7 @@ executable paper
   ghc-options: -O2 -Wall -threaded -Wno-unused-imports -Wno-name-shadowing -Wno-type-defaults -Wno-incomplete-patterns -Wno-incomplete-uni-patterns -Wno-x-partial
   build-depends:
       base >=4.21 && <5
+    , aeson
     , aeson-pretty
     , bytestring
     , citeproc

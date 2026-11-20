@@ -38,3 +38,8 @@ installed and available on `PATH`.
 1. Create a new project: `paper init my_project`.
 
 2. Create a PDF output: `paper build my_project --output-pdf`
+
+For adapters, `paper describe my_project --json` prints ordered source paths,
+merged Pandoc metadata, and the effective output stem without building or
+writing a bibliography cache. Use `paper build my_project --out-dir out
+--output-stem paper --output-html` for a deterministic output filename.

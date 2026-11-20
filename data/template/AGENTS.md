@@ -92,6 +92,11 @@ of `A Paper Title` produces files named `A Paper Title.tex`,
 `A Paper Title.html`, or `A Paper Title.docx`. If it is absent, the stem is
 `paper`.
 
+`paper build PROJECT_DIR --output-stem NAME` overrides the stem for all
+requested formats, including TeX. Supply a single filename stem, not a path.
+`paper describe PROJECT_DIR --json` describes the resolved, ordered source and
+supplement paths and merged Pandoc metadata without compiling or writing files.
+
 Metadata not consumed directly by Paper is retained and passed to Pandoc. This
 allows templates and Pandoc writers to use fields such as:
 
